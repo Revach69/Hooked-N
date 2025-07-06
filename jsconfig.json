@@ -5,4 +5,10 @@
     "jsx": "react-jsx"
   },
   "include": ["app/**/*.js", "app/**/*.jsx", "components/**/*.jsx", "api/**/*.js", "lib/**/*.js", "utils/**/*.ts"]
+    "paths": {
+      "@/*": ["./*"]
+    },
+    "jsx": "react-jsx"
+  },
+  "include": ["**/*.js", "**/*.jsx", "**/*.ts", "**/*.tsx"]
 }
