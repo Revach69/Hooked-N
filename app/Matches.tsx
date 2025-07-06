@@ -2,6 +2,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useNavigation } from "@react-navigation/native";
 import { AppState, AppStateStatus, Linking, View, Text, Image, ScrollView, TouchableOpacity, ActivityIndicator, StyleSheet } from "react-native";
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Card, CardContent } from "../components/ui/card";
 import { Button } from "../components/ui/button";
@@ -19,8 +20,18 @@ export default function Matches() {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isTabActive, setIsTabActive] = useState<boolean>(true);
   const [imageErrorMap, setImageErrorMap] = useState<Record<string, boolean>>({});
-  const currentSessionId = localStorage.getItem('currentSessionId');
-  const eventId = localStorage.getItem('currentEventId');
+  const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
+  const [eventId, setEventId] = useState<string | null>(null);
+
+  useEffect(() => {
+    const loadIds = async () => {
+      const sId = await AsyncStorage.getItem('currentSessionId');
+      const eId = await AsyncStorage.getItem('currentEventId');
+      setCurrentSessionId(sId);
+      setEventId(eId);
+    };
+    loadIds();
+  }, []);
 
   const markMatchesAsNotified = useCallback(async (mutualMatchProfiles) => {
     if (!currentSessionId || !eventId || mutualMatchProfiles.length === 0) return;

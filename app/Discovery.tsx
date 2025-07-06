@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, Image, ActivityIndicator, StyleSheet, SafeAreaView, useColorScheme } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, Image, ActivityIndicator, StyleSheet, SafeAreaView, useColorScheme, AppState, AppStateStatus } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation } from '@react-navigation/native';
 import { createPageUrl } from '../utils';
 import { Card, CardContent } from '../components/ui/card';
@@ -46,12 +47,12 @@ export default function Discovery() {
   }, [profiles, filters, currentUserProfile]);
 
   useEffect(() => {
-    const handleVisibilityChange = () => {
-      setIsTabActive(!document.hidden);
+    const handleStateChange = (state: AppStateStatus) => {
+      setIsTabActive(state === 'active');
     };
-    setIsTabActive(!document.hidden);
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+    setIsTabActive(AppState.currentState === 'active');
+    const subscription = AppState.addEventListener('change', handleStateChange);
+    return () => subscription.remove();
   }, []);
 
   useEffect(() => {
@@ -66,14 +67,14 @@ export default function Discovery() {
   }, [currentSessionId, currentEvent, isTabActive]);
 
   const initializeSession = async () => {
-    const eventId = localStorage.getItem('currentEventId');
-    const sessionId = localStorage.getItem('currentSessionId');
+    const eventId = await AsyncStorage.getItem('currentEventId');
+    const sessionId = await AsyncStorage.getItem('currentSessionId');
     if (!eventId || !sessionId) {
       navigation.navigate(createPageUrl('Home'));
       return;
     }
     setCurrentSessionId(sessionId);
-    const hasSeenGuide = localStorage.getItem(`hasSeenGuide_${eventId}`);
+    const hasSeenGuide = await AsyncStorage.getItem(`hasSeenGuide_${eventId}`);
     if (!hasSeenGuide) {
       setShowGuide(true);
     }
@@ -146,7 +147,7 @@ export default function Discovery() {
 
   const handleLike = async (likedProfile: any) => {
     if (likedProfiles.has(likedProfile.session_id) || !currentUserProfile) return;
-    const eventId = localStorage.getItem('currentEventId');
+    const eventId = await AsyncStorage.getItem('currentEventId');
     const likerSessionId = currentUserProfile.session_id;
     try {
       setLikedProfiles(prev => new Set([...Array.from(prev), likedProfile.session_id]));
@@ -184,10 +185,10 @@ export default function Discovery() {
     setSelectedProfileForDetail(profile);
   };
 
-  const handleCloseGuide = () => {
-    const eventId = localStorage.getItem('currentEventId');
+  const handleCloseGuide = async () => {
+    const eventId = await AsyncStorage.getItem('currentEventId');
     if (eventId) {
-      localStorage.setItem(`hasSeenGuide_${eventId}`, 'true');
+      await AsyncStorage.setItem(`hasSeenGuide_${eventId}`, 'true');
     }
     setShowGuide(false);
   };

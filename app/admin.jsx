@@ -4,14 +4,19 @@ import { Event, EventProfile, Like, Message, EventFeedback } from '../api/entiti
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '../components/ui/card';
-import { Badge } from '../components/ui/badge'; // Added Badge import
-import { Copy, Download, Loader2, PlusCircle, BarChart2, Edit, Trash2, FileImage, MessageSquare, Hash, MapPin } from 'lucide-react'; // Added Hash, MapPin imports
+import { Badge } from '../components/ui/badge';
+import { Copy, Download, Loader2, PlusCircle, BarChart2, Edit, Trash2, FileImage, MessageSquare, Hash, MapPin } from 'lucide-react';
 import { toast, Toaster } from "../components/ui/sonner";
 import QRCodeGenerator from '../components/QRCodeGenerator';
 import EventFormModal from '../components/admin/EventFormModal';
 import EventAnalyticsModal from '../components/admin/EventAnalyticsModal';
 import DeleteConfirmationDialog from '../components/admin/DeleteConfirmationDialog';
 import FeedbackInsightsModal from '../components/admin/FeedbackInsightsModal';
+import * as Clipboard from 'expo-clipboard';
+import * as FileSystem from 'expo-file-system';
+import * as Sharing from 'expo-sharing';
+
+const APP_ORIGIN = 'https://example.com';
 
 // --- CSV Helper Functions ---
 const convertToCSV = (dataArray, headers) => {
@@ -29,16 +34,12 @@ const convertToCSV = (dataArray, headers) => {
   return [headerRow, ...dataRows].join('\r\n');
 };
 
-const downloadCSV = (csvContent, fileName) => {
-  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-  const link = document.createElement("a");
-  const url = URL.createObjectURL(blob);
-  link.setAttribute("href", url);
-  link.setAttribute("download", fileName);
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-  URL.revokeObjectURL(url);
+const downloadCSV = async (csvContent, fileName) => {
+  const path = FileSystem.documentDirectory + fileName;
+  await FileSystem.writeAsStringAsync(path, csvContent, {
+    encoding: FileSystem.EncodingType.UTF8,
+  });
+  await Sharing.shareAsync(path);
 };
 
 const downloadEventData = async (event) => {
@@ -218,10 +219,13 @@ export default function AdminDashboard() {
     }
   };
 
-  const copyToClipboard = (text, label) => { // This helper is now only used by one button, the other one has inline copy logic.
-    navigator.clipboard.writeText(text)
-      .then(() => toast.success(`${label} copied to clipboard!`))
-      .catch(err => toast.error(`Failed to copy ${label}.`));
+  const copyToClipboard = async (text, label) => {
+    try {
+      await Clipboard.setStringAsync(text);
+      toast.success(`${label} copied to clipboard!`);
+    } catch (err) {
+      toast.error(`Failed to copy ${label}.`);
+    }
   };
 
   if (!isAuthenticated) {
@@ -328,13 +332,13 @@ export default function AdminDashboard() {
                       <h4 className="font-semibold text-gray-900 dark:text-white mb-2">Join Link</h4>
                       <div className="flex items-center gap-2">
                         <Input
-                          value={`${window.location.origin}${createPageUrl(`join?code=${event.code?.toUpperCase() || ''}`)}`}
+                          value={`${APP_ORIGIN}${createPageUrl(`join?code=${event.code?.toUpperCase() || ''}`)}`}
                           readOnly
                           className="bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white border-gray-300 dark:border-gray-600"
                         />
                         <Button
                           onClick={() => {
-                            navigator.clipboard.writeText(`${window.location.origin}${createPageUrl(`join?code=${event.code?.toUpperCase() || ''}`)}`);
+                            Clipboard.setStringAsync(`${APP_ORIGIN}${createPageUrl(`join?code=${event.code?.toUpperCase() || ''}`)}`);
                             toast.success('Join link copied to clipboard!');
                           }}
                           variant="outline"
@@ -350,7 +354,7 @@ export default function AdminDashboard() {
                     <div>
                       <h4 className="font-semibold text-gray-900 dark:text-white mb-2">QR Code</h4>
                       <QRCodeGenerator
-                        url={`${window.location.origin}${createPageUrl(`join?code=${event.code?.toUpperCase() || ''}`)}`}
+                        url={`${APP_ORIGIN}${createPageUrl(`join?code=${event.code?.toUpperCase() || ''}`)}`}
                         fileName={`${event.name}_QR.png`}
                       />
                     </div>

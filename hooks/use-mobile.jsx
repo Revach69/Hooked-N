@@ -1,19 +1,19 @@
-import * as React from "react"
+import * as React from 'react'
+import { Dimensions } from 'react-native'
 
 const MOBILE_BREAKPOINT = 768
 
 export function useIsMobile() {
-  const [isMobile, setIsMobile] = React.useState(undefined)
+  const [isMobile, setIsMobile] = React.useState(false)
 
   React.useEffect(() => {
-    const mql = window.matchMedia(`(max-width: ${MOBILE_BREAKPOINT - 1}px)`)
-    const onChange = () => {
-      setIsMobile(window.innerWidth < MOBILE_BREAKPOINT)
+    const update = ({ window }) => {
+      setIsMobile(window.width < MOBILE_BREAKPOINT)
     }
-    mql.addEventListener("change", onChange)
-    setIsMobile(window.innerWidth < MOBILE_BREAKPOINT)
-    return () => mql.removeEventListener("change", onChange);
+    const subscription = Dimensions.addEventListener('change', update)
+    setIsMobile(Dimensions.get('window').width < MOBILE_BREAKPOINT)
+    return () => subscription.remove()
   }, [])
 
-  return !!isMobile
+  return isMobile
 }
