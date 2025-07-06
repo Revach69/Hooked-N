@@ -1,0 +1,23 @@
+{
+  "expo": {
+    "name": "Hooked",
+    "slug": "hooked",
+    "version": "1.0.0",
+    "sdkVersion": "53.0.0",
+    "platforms": [
+      "ios",
+      "android"
+    ],
+    "orientation": "portrait",
+    "jsEngine": "hermes",
+    "ios": {
+      "bundleIdentifier": "com.anonymous.hooked" 
+    },
+      "android": {
+        "permissions": [
+          "android.permission.CAMERA"
+        ],
+        "package": "com.anonymous.hooked"
+  }
+}
+}
