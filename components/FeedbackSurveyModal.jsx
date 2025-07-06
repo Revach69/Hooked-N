@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Button } from './ui/button';
+import { Input } from './ui/input';
+import { Textarea } from './ui/textarea';
+import { Label } from './ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { X, Heart, Star } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { EventFeedback } from '@/api/entities';
+import { EventFeedback } from '../api/entities';
 import { toast } from 'sonner';
 
 export default function FeedbackSurveyModal({ event, sessionId, onClose }) {

@@ -1,9 +1,9 @@
 
 import React, { useRef, useEffect, useState, useCallback } from "react";
-import { Dialog } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
+import { Dialog } from "./ui/dialog";
+import { Button } from "./ui/button";
 import { Camera, X } from "lucide-react";
-import { toast } from "@/components/ui/sonner";
+import { toast } from "./ui/sonner";
 
 export default function QRScanner({ onScan, onClose, onSwitchToManual }) {
   const videoRef = useRef(null);

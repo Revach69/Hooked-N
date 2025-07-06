@@ -1,7 +1,7 @@
 import React from 'react';
-import { Button } from '@/components/ui/button';
+import { Button } from './ui/button';
 import { Download, AlertCircle } from 'lucide-react';
-import { toast } from "@/components/ui/sonner";
+import { toast } from "./ui/sonner";
 
 const QR_API_BASE = 'https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=';
 

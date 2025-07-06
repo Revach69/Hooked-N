@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { createPageUrl } from "@/utils";
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { createPageUrl } from "../utils";
+import { Card, CardContent } from "../components/ui/card";
+import { Button } from "../components/ui/button";
 import { AlertCircle, Calendar, MapPin, Clock } from "lucide-react";
-import { Event } from "@/api/entities";
+import { Event } from "../api/entities";
 
 export default function JoinPage() {
   const navigate = useNavigate();
@@ -70,7 +70,7 @@ export default function JoinPage() {
       if (existingSessionId) {
         // User might be returning - verify their profile still exists
         try {
-          const { EventProfile } = await import('@/api/entities');
+          const { EventProfile } = await import('../api/entities');
           const existingProfiles = await EventProfile.filter({
             session_id: existingSessionId,
             event_id: foundEvent.id
