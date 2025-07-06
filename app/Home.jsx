@@ -1,11 +1,11 @@
 
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { createPageUrl } from "@/utils";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { createPageUrl } from "../utils";
+import { Button } from "../components/ui/button";
+import { Card, CardContent, CardHeader } from "../components/ui/card";
 import { QrCode, Hash, Heart, Shield, Clock, Users } from "lucide-react";
-import { Event } from "@/api/entities";
+import { Event } from "../api/entities";
 import QRScanner from "../components/QRScanner";
 import EventCodeEntry from "../components/EventCodeEntry";
 

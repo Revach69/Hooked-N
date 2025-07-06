@@ -1,12 +1,12 @@
 
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { createPageUrl } from "@/utils";
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { createPageUrl } from "../utils";
+import { Card, CardContent } from "../components/ui/card";
+import { Button } from "../components/ui/button";
+import { Badge } from "../components/ui/badge";
 import { Heart, Filter, Users, Sparkles, Image as ImageIcon } from "lucide-react";
-import { EventProfile, Like, Event } from "@/api/entities";
+import { EventProfile, Like, Event } from "../api/entities";
 import ProfileFilters from "../components/ProfileFilters";
 import ProfileDetailModal from "../components/ProfileDetailModal";
 import FirstTimeGuideModal from "../components/FirstTimeGuideModal";

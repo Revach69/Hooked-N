@@ -2,8 +2,8 @@
 import React, { useEffect } from 'react';
 import { X, Heart, Calendar, Ruler, User } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
+import { Badge } from './ui/badge';
+import { Button } from './ui/button';
 
 export default function ProfileDetailModal({ profile, onClose, onLike, isLiked }) {
   useEffect(() => {

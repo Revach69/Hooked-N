@@ -5,12 +5,12 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
+} from "./ui/dialog";
+import { Button } from "./ui/button";
+import { Input } from "./ui/input";
+import { Badge } from "./ui/badge";
 import { Send, X, Clock, Share, Phone, User } from "lucide-react";
-import { Message, ContactShare } from "@/api/entities";
+import { Message, ContactShare } from "../api/entities";
 import { format } from "date-fns";
 import ContactShareModal from "./ContactShareModal";
 

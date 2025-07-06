@@ -1,7 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { createPageUrl } from '@/utils';
-import { Button } from '@/components/ui/button';
+import { createPageUrl } from '../utils';
+import { Button } from './ui/button';
 import { X, MessageCircle, ArrowRight } from 'lucide-react';
 import { motion } from 'framer-motion';
 

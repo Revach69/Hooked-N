@@ -1,15 +1,15 @@
 
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { createPageUrl } from "@/utils";
-import { User } from "@/api/entities";
-import { EventProfile } from "@/api/entities";
-import { Event } from "@/api/entities";
-import { UploadFile } from "@/api/integrations";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { createPageUrl } from "../utils";
+import { User } from "../api/entities";
+import { EventProfile } from "../api/entities";
+import { Event } from "../api/entities";
+import { UploadFile } from "../api/integrations";
+import { Button } from "../components/ui/button";
+import { Input } from "../components/ui/input";
+import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../components/ui/select";
 import { Check, Shield, User as UserIcon, LogIn, Heart, Camera, Upload, Facebook, Instagram } from "lucide-react";
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from "framer-motion";
