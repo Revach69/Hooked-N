@@ -1,4 +1,4 @@
-import Layout from "./Layout.jsx";
+import Layout from "./Layout";
 
 import Home from "./Home";
 
