@@ -1,0 +1,17 @@
+{
+    "compilerOptions": {
+      "target": "esnext",
+      "module": "esnext",
+      "jsx": "react-native",
+      "strict": true,
+      "baseUrl": "./",
+      "paths": {
+        "~/*": ["./*"]
+      },
+      "allowSyntheticDefaultImports": true,
+      "esModuleInterop": true,
+      "skipLibCheck": true
+    },
+    "exclude": ["node_modules", "babel.config.js"]
+  }
+  
