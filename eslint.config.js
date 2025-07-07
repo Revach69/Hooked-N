@@ -1,27 +1,39 @@
-import js from '@eslint/js'
-import globals from 'globals'
-import react from 'eslint-plugin-react'
-import reactHooks from 'eslint-plugin-react-hooks'
-import reactRefresh from 'eslint-plugin-react-refresh'
+const js = require('@eslint/js');
+const globals = require('globals');
+const react = require('eslint-plugin-react');
+const reactHooks = require('eslint-plugin-react-hooks');
+const reactRefresh = require('eslint-plugin-react-refresh');
+const ts = require('@typescript-eslint/eslint-plugin');
+const tsParser = require('@typescript-eslint/parser');
 
-export default [
-  { ignores: ['dist'] },
+/** @type {import("eslint").Linter.FlatConfig[]} */
+module.exports = [
+  { ignores: ['dist', 'node_modules'] },
   {
-    files: ['**/*.{js,jsx}'],
+    files: ['**/*.{js,jsx,ts,tsx}'],
     languageOptions: {
-      ecmaVersion: 2020,
-      globals: globals.browser,
+      parser: tsParser,
       parserOptions: {
         ecmaVersion: 'latest',
-        ecmaFeatures: { jsx: true },
         sourceType: 'module',
+        ecmaFeatures: { jsx: true },
+        // ✅ removed project: ['./tsconfig.json']
+      },
+      globals: {
+        ...globals.browser,
+        require: 'readonly',
+        module: 'readonly',
+        __dirname: 'readonly',
       },
     },
-    settings: { react: { version: '18.3' } },
+    settings: {
+      react: { version: 'detect' },
+    },
     plugins: {
       react,
       'react-hooks': reactHooks,
       'react-refresh': reactRefresh,
+      '@typescript-eslint': ts,
     },
     rules: {
       ...js.configs.recommended.rules,
@@ -35,4 +47,4 @@ export default [
       ],
     },
   },
-]
+];
