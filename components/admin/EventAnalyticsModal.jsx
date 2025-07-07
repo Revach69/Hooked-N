@@ -1,7 +1,7 @@
+import PropTypes from 'prop-types';
 import React, { useState, useEffect } from 'react';
 import {
   Dialog,
-  DialogContent,
   DialogHeader,
   DialogTitle,
 } from '../ui/dialog';
@@ -11,7 +11,7 @@ import { EventProfile, Like, Message } from '../../api/entities';
 import { X, Users, Heart, MessageCircle, Calendar } from 'lucide-react';
 import { format } from 'date-fns';
 
-export default function EventAnalyticsModal({ event, isOpen, onClose }) {
+function EventAnalyticsModal({ event, isOpen, onClose }) {
   const [analytics, setAnalytics] = useState({
     profiles: [],
     likes: [],
@@ -205,3 +205,14 @@ export default function EventAnalyticsModal({ event, isOpen, onClose }) {
     </Dialog>
   );
 }
+
+EventAnalyticsModal.propTypes = {
+  event: PropTypes.shape({
+    id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    name: PropTypes.string,
+  }),
+  isOpen: PropTypes.bool.isRequired,
+  onClose: PropTypes.func.isRequired,
+};
+
+export default EventAnalyticsModal;

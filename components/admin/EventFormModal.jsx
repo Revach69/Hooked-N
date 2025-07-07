@@ -1,4 +1,5 @@
 
+import PropTypes from 'prop-types';
 import React, { useState, useEffect } from 'react';
 import {
   Dialog,
@@ -15,7 +16,7 @@ import { X, Save, Loader2 } from 'lucide-react';
 import { toast } from "../ui/sonner";
 import { format } from 'date-fns';
 
-export default function EventFormModal({ event, isOpen, onClose, onSuccess }) {
+function EventFormModal({ event, isOpen, onClose, onSuccess }) {
   const [formData, setFormData] = useState({
     name: '',
     code: '',
@@ -220,3 +221,21 @@ export default function EventFormModal({ event, isOpen, onClose, onSuccess }) {
     </Dialog>
   );
 }
+
+EventFormModal.propTypes = {
+  event: PropTypes.shape({
+    id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    name: PropTypes.string,
+    code: PropTypes.string,
+    location: PropTypes.string,
+    description: PropTypes.string,
+    organizer_email: PropTypes.string,
+    starts_at: PropTypes.oneOfType([PropTypes.string, PropTypes.instanceOf(Date)]),
+    expires_at: PropTypes.oneOfType([PropTypes.string, PropTypes.instanceOf(Date)]),
+  }),
+  isOpen: PropTypes.bool.isRequired,
+  onClose: PropTypes.func.isRequired,
+  onSuccess: PropTypes.func.isRequired,
+};
+
+export default EventFormModal;

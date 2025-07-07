@@ -1,4 +1,4 @@
-import React from 'react';
+import PropTypes from 'prop-types';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -9,9 +9,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '../ui/alert-dialog';
-import { Button } from '../ui/button';
 
-export default function DeleteConfirmationDialog({ isOpen, onClose, onConfirm, eventName }) {
+function DeleteConfirmationDialog({ isOpen, onClose, onConfirm, eventName }) {
   return (
     <AlertDialog open={isOpen} onOpenChange={onClose}>
       <AlertDialogContent className="bg-white dark:bg-gray-900 text-gray-800 dark:text-white rounded-xl shadow-xl p-6 max-w-md w-full border border-gray-200 dark:border-gray-700">
@@ -20,7 +19,7 @@ export default function DeleteConfirmationDialog({ isOpen, onClose, onConfirm, e
             Are you absolutely sure?
           </AlertDialogTitle>
           <AlertDialogDescription className="text-gray-600 dark:text-gray-300 mb-6">
-            This action cannot be undone. This will permanently delete the event <strong>"{eventName}"</strong> and all associated data including profiles, likes, and messages.
+            This action cannot be undone. This will permanently delete the event <strong>&quot;{eventName}&quot;</strong> and all associated data including profiles, likes, and messages.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter className="flex justify-end gap-3">
@@ -45,3 +44,12 @@ export default function DeleteConfirmationDialog({ isOpen, onClose, onConfirm, e
     </AlertDialog>
   );
 }
+
+DeleteConfirmationDialog.propTypes = {
+  isOpen: PropTypes.bool.isRequired,
+  onClose: PropTypes.func.isRequired,
+  onConfirm: PropTypes.func.isRequired,
+  eventName: PropTypes.string,
+};
+
+export default DeleteConfirmationDialog;
