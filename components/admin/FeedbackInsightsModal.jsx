@@ -1,7 +1,7 @@
+import PropTypes from 'prop-types';
 import React, { useState, useEffect } from 'react';
 import {
   Dialog,
-  DialogContent,
   DialogHeader,
   DialogTitle,
 } from '../ui/dialog';
@@ -12,7 +12,23 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '.
 import { EventFeedback } from '../../api/entities';
 import { X, MessageSquare, Star, Users, CheckCircle, XCircle } from 'lucide-react';
 
-export default function FeedbackInsightsModal({ event, isOpen, onClose }) {
+const StarDisplay = ({ rating }) => (
+  <div className="flex items-center gap-1">
+    {[1, 2, 3, 4, 5].map((star) => (
+      <Star
+        key={star}
+        className={`w-4 h-4 ${
+          star <= Math.round(rating)
+            ? 'text-yellow-500 fill-current'
+            : 'text-gray-300 dark:text-gray-600'
+        }`}
+      />
+    ))}
+    <span className="ml-2 font-semibold text-gray-900 dark:text-white">{rating}</span>
+  </div>
+);
+
+function FeedbackInsightsModal({ event, isOpen, onClose }) {
   const [feedbacks, setFeedbacks] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [stats, setStats] = useState(null);
@@ -68,22 +84,6 @@ export default function FeedbackInsightsModal({ event, isOpen, onClose }) {
       }
     });
   };
-
-  const StarDisplay = ({ rating }) => (
-    <div className="flex items-center gap-1">
-      {[1, 2, 3, 4, 5].map((star) => (
-        <Star
-          key={star}
-          className={`w-4 h-4 ${
-            star <= Math.round(rating) 
-              ? 'text-yellow-500 fill-current' 
-              : 'text-gray-300 dark:text-gray-600'
-          }`}
-        />
-      ))}
-      <span className="ml-2 font-semibold text-gray-900 dark:text-white">{rating}</span>
-    </div>
-  );
 
   if (!isOpen) return null;
 
@@ -273,3 +273,19 @@ export default function FeedbackInsightsModal({ event, isOpen, onClose }) {
     </Dialog>
   );
 }
+
+StarDisplay.propTypes = {
+  rating: PropTypes.number.isRequired,
+};
+
+FeedbackInsightsModal.propTypes = {
+  event: PropTypes.shape({
+    id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    name: PropTypes.string,
+  }),
+  isOpen: PropTypes.bool.isRequired,
+  onClose: PropTypes.func.isRequired,
+};
+
+export default FeedbackInsightsModal;
+
