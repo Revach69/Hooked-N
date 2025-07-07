@@ -26,6 +26,7 @@ import * as FileSystem from 'expo-file-system';
 
 import { User, EventProfile, Event } from '../api/entities';
 import { UploadFile } from '../api/integrations';
+import { saveLocalProfile, getLocalProfile } from '../lib/localProfile';
 
 // Simple UUID v4 generator function
 function generateUUID() {
@@ -109,6 +110,25 @@ export default function Consent() {
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
+
+  useEffect(() => {
+    const loadProfile = async () => {
+      const saved = await getLocalProfile();
+      if (saved) {
+        setFormData(prev => ({
+          ...prev,
+          first_name: saved.fullName || prev.first_name,
+          age: saved.age != null ? String(saved.age) : prev.age,
+          gender_identity: saved.gender || prev.gender_identity,
+          interested_in: Array.isArray(saved.interests)
+            ? saved.interests.join(', ')
+            : prev.interested_in,
+          profile_photo_url: (saved as any).profile_photo_url || prev.profile_photo_url,
+        }));
+      }
+    };
+    loadProfile();
+  }, []);
 
   useEffect(() => {
     const fetchEvent = async () => {
@@ -222,6 +242,19 @@ export default function Consent() {
       await AsyncStorage.setItem('currentSessionId', sessionId);
       await AsyncStorage.setItem('currentProfileColor', profileColor);
       await AsyncStorage.setItem('currentProfilePhotoUrl', formData.profile_photo_url);
+
+      await saveLocalProfile({
+        fullName: formData.first_name.trim(),
+        phoneNumber: '',
+        age: parseInt(formData.age.trim(), 10),
+        gender: formData.gender_identity.trim(),
+        instagram: '',
+        interests: formData.interested_in
+          .split(',')
+          .map(i => i.trim())
+          .filter(Boolean),
+        profile_photo_url: formData.profile_photo_url,
+      });
 
       Toast.show({ type: 'success', text1: 'Profile created!' });
       Alert.alert('Success', 'Profile created! Welcome to the event.');
