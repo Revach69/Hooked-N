@@ -12,7 +12,7 @@ import {
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { Heart, Users, User } from 'lucide-react-native';
-import Toast from 'react-native-toast-message';
+import { Toaster } from '../components/ui/sonner';
 import {
   Event,
   EventProfile,
@@ -294,7 +294,7 @@ export default function Layout({ children, currentPageName }: LayoutProps) {
         <Text style={[styles.privacyText, { color: isDark ? '#9ca3af' : '#6b7280' }]}>Your data automatically expires when this event ends. No permanent profiles, no data sharing between events.</Text>
       </View>
 
-      <Toast />
+      <Toaster />
     </SafeAreaView>
   );
 }

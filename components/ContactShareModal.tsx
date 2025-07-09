@@ -8,7 +8,7 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { Phone, User, CheckCircle, X } from 'lucide-react-native';
-import Toast from 'react-native-toast-message';
+import toast from '../lib/toast';
 
 import { Input } from './ui/input';
 import { Label } from './ui/label';
@@ -44,7 +44,7 @@ export default function ContactShareModal({ matchName, onConfirm, onCancel }: Pr
 
   const handleManualEntry = async () => {
     if (!contactInfo.fullName.trim()) {
-      Toast.show({ type: 'error', text1: 'Full name is required.' });
+      toast({ type: 'error', text1: 'Full name is required.' });
       return;
     }
     if (
@@ -52,18 +52,18 @@ export default function ContactShareModal({ matchName, onConfirm, onCancel }: Pr
       !contactInfo.phoneNumber.trim() &&
       !contactInfo.instagram.trim()
     ) {
-      Toast.show({ type: 'error', text1: 'Please enter at least one contact method.' });
+      toast({ type: 'error', text1: 'Please enter at least one contact method.' });
       return;
     }
     setLoading(true);
     try {
       await onConfirm(contactInfo);
       setStep('success');
-      Toast.show({ type: 'success', text1: 'Contact info shared!' });
+      toast({ type: 'success', text1: 'Contact info shared!' });
       setTimeout(onCancel, 2000);
     } catch (e) {
       console.error('Error sharing contact info:', e);
-      Toast.show({ type: 'error', text1: 'Failed to share contact info.' });
+      toast({ type: 'error', text1: 'Failed to share contact info.' });
     } finally {
       setLoading(false);
     }

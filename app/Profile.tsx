@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, ScrollView, TextInput, Image, TouchableOpacity,
 import { useNavigation } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as ImagePicker from 'expo-image-picker';
-import Toast from 'react-native-toast-message';
+import toast from '../lib/toast';
 import { User, EventProfile } from '../api/entities';
 import { UploadFile } from '../api/integrations';
 import { Button } from '../components/ui/button';
@@ -65,7 +65,7 @@ export default function Profile() {
       }
     } catch (error) {
       console.error('Error loading profile data:', error);
-      Toast.show({ type: 'error', text1: 'Failed to load profile.' });
+      toast({ type: 'error', text1: 'Failed to load profile.' });
     } finally {
       setIsLoading(false);
     }
@@ -85,7 +85,7 @@ export default function Profile() {
         ? prev.interests.filter(i => i !== interest)
         : [...prev.interests, interest];
       if (newInterests.length > 3) {
-        Toast.show({ type: 'info', text1: 'You can select up to 3 interests.' });
+        toast({ type: 'info', text1: 'You can select up to 3 interests.' });
         return prev;
       }
       return { ...prev, interests: newInterests };
@@ -95,19 +95,19 @@ export default function Profile() {
   const handleSave = async (field: 'bio' | 'interests' | 'height') => {
     try {
       await User.updateMyUserData({ [field]: formData[field] });
-      Toast.show({ type: 'success', text1: `${field.charAt(0).toUpperCase() + field.slice(1)} updated!` });
+      toast({ type: 'success', text1: `${field.charAt(0).toUpperCase() + field.slice(1)} updated!` });
       handleEditToggle(field);
       await loadData();
     } catch (error) {
       console.error(`Error updating ${field}:`, error);
-      Toast.show({ type: 'error', text1: `Failed to update ${field}.` });
+      toast({ type: 'error', text1: `Failed to update ${field}.` });
     }
   };
 
   const handleProfilePhotoChange = async () => {
     const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (!perm.granted) {
-      Toast.show({ type: 'error', text1: 'Permission denied.' });
+      toast({ type: 'error', text1: 'Permission denied.' });
       return;
     }
     const result = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ImagePicker.MediaTypeOptions.Images, quality: 0.8 });
@@ -119,12 +119,12 @@ export default function Profile() {
         const file = { uri: asset.uri, name: asset.fileName ?? 'photo.jpg', type: asset.mimeType ?? 'image/jpeg' } as any;
         const { file_url } = await UploadFile({ file });
         await User.updateMyUserData({ profile_photo_url: file_url });
-        Toast.show({ type: 'success', text1: 'Profile photo updated!' });
+        toast({ type: 'success', text1: 'Profile photo updated!' });
         await loadData();
         setLocalPhotoUri(null);
       } catch (error) {
         console.error('Error uploading photo:', error);
-        Toast.show({ type: 'error', text1: 'Failed to upload photo.' });
+        toast({ type: 'error', text1: 'Failed to upload photo.' });
       } finally {
         setIsUploading(false);
       }
@@ -137,10 +137,10 @@ export default function Profile() {
       const newVisibility = !eventProfile.is_visible;
       await EventProfile.update(eventProfile.id, { is_visible: newVisibility });
       setEventProfile((prev: any) => ({ ...prev, is_visible: newVisibility }));
-      Toast.show({ type: 'success', text1: `Profile is now ${newVisibility ? 'visible' : 'hidden'}.` });
+      toast({ type: 'success', text1: `Profile is now ${newVisibility ? 'visible' : 'hidden'}.` });
     } catch (error) {
       console.error('Error updating visibility:', error);
-      Toast.show({ type: 'error', text1: 'Failed to update visibility.' });
+      toast({ type: 'error', text1: 'Failed to update visibility.' });
     }
   };
 
@@ -164,11 +164,11 @@ export default function Profile() {
                 'currentProfileColor',
                 'currentProfilePhotoUrl'
               ]);
-              Toast.show({ type: 'success', text1: 'You have left the event.' });
+              toast({ type: 'success', text1: 'You have left the event.' });
               (navigation as any).navigate('Home');
             } catch (error) {
               console.error('Error leaving event:', error);
-              Toast.show({ type: 'error', text1: 'Failed to leave event.' });
+              toast({ type: 'error', text1: 'Failed to leave event.' });
             }
           }
         }

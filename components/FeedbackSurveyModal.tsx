@@ -9,7 +9,7 @@ import {
 } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import { Heart, X, Star } from 'lucide-react-native';
-import Toast from 'react-native-toast-message';
+import toast from '../lib/toast';
 import { EventFeedback } from '../api/entities';
 import { Button } from './ui/button';
 import { Textarea } from './ui/textarea';
@@ -86,7 +86,7 @@ export default function FeedbackSurveyModal({ event, sessionId, onClose }: Props
 
   const handleSubmit = async () => {
     if (!validateForm()) {
-      Toast.show({ type: 'error', text1: 'Please complete all required fields.' });
+      toast({ type: 'error', text1: 'Please complete all required fields.' });
       return;
     }
     setIsSubmitting(true);
@@ -102,11 +102,11 @@ export default function FeedbackSurveyModal({ event, sessionId, onClose }: Props
         match_experience_feedback: formData.match_experience_feedback.trim(),
         general_feedback: formData.general_feedback.trim() || null,
       });
-      Toast.show({ type: 'success', text1: 'Thanks for your feedback 💘' });
+      toast({ type: 'success', text1: 'Thanks for your feedback 💘' });
       onClose();
     } catch (err) {
       console.error('Error submitting feedback:', err);
-      Toast.show({ type: 'error', text1: 'Failed to submit feedback. Please try again.' });
+      toast({ type: 'error', text1: 'Failed to submit feedback. Please try again.' });
     } finally {
       setIsSubmitting(false);
     }
