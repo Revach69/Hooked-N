@@ -1,6 +1,8 @@
 
 import React, { useState, useEffect, useCallback } from "react";
 import { useNavigation } from "@react-navigation/native";
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { RootStackParamList } from './index'; // adjust path if needed
 import { AppState, AppStateStatus, Linking, View, Text, Image, ScrollView, TouchableOpacity, ActivityIndicator, StyleSheet } from "react-native";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -13,7 +15,7 @@ import ChatModal from "../components/ChatModal";
 import ProfileDetailModal from "../components/ProfileDetailModal";
 
 export default function Matches() {
-  const navigation = useNavigation();
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const [matches, setMatches] = useState<any[]>([]);
   const [selectedMatch, setSelectedMatch] = useState<any>(null);
   const [selectedProfileForDetail, setSelectedProfileForDetail] = useState<any>(null);
@@ -160,10 +162,12 @@ export default function Matches() {
         if (matchToOpen) {
           setSelectedMatch(matchToOpen);
         }
-        } catch {
+        } catch (_) {
           // ignore invalid URL
         }
-    };
+    } catch (error) {
+      console.error("Error processing initial URL:", error);
+    }
     checkInitialUrl();
 
   }, [matches]);
@@ -229,7 +233,7 @@ export default function Matches() {
                     <Text style={styles.name}>{match.first_name}</Text>
                     <Text style={styles.age}>{match.age} years old</Text>
                     <View style={styles.interestsRow}>
-                      {match.interests?.slice(0, 2).map((interest) => (
+                      {match.interests?.slice(0, 2).map((interest: string) => (
                         <Badge
                           key={interest}
                           variant="outline"

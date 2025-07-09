@@ -198,7 +198,8 @@ const AdminDashboard: React.FC = () => {
       }
   };
 
-  const openModal = (modalName: keyof typeof modals, event: EventEntity | null = null) => {
+
+  const openModal = (modalName, event = null) => {
     setSelectedEvent(event);
     setModals(prev => ({ ...prev, [modalName]: true }));
   };
