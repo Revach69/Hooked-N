@@ -1,4 +1,3 @@
-import PropTypes from 'prop-types';
 import React, { useState, useEffect, useCallback } from 'react';
 import {
   Dialog,
@@ -12,7 +11,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '.
 import { EventFeedback } from '../../api/entities';
 import { X, MessageSquare, Star, Users, CheckCircle, XCircle } from 'lucide-react';
 
-const StarDisplay = ({ rating }) => (
+interface StarDisplayProps { rating: number }
+const StarDisplay: React.FC<StarDisplayProps> = ({ rating }) => (
   <div className="flex items-center gap-1">
     {[1, 2, 3, 4, 5].map((star) => (
       <Star
@@ -28,10 +28,32 @@ const StarDisplay = ({ rating }) => (
   </div>
 );
 
-function FeedbackInsightsModal({ event, isOpen, onClose }) {
-  const [feedbacks, setFeedbacks] = useState([]);
+interface EventData {
+  id: string | number;
+  name: string;
+}
+
+export interface FeedbackInsightsModalProps {
+  event: EventData;
+  isOpen: boolean;
+  onClose: () => void;
+}
+
+const FeedbackInsightsModal: React.FC<FeedbackInsightsModalProps> = ({ event, isOpen, onClose }) => {
+  const [feedbacks, setFeedbacks] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [stats, setStats] = useState(null);
+  const [stats, setStats] = useState<{
+    totalResponses: number;
+    ratings: {
+      profileSetup: { average: string; count: number };
+      interestsHelpful: { average: string; count: number };
+      socialUsefulness: { average: string; count: number };
+    };
+    booleans: {
+      metInPerson: { yes: number; no: number };
+      openToOtherEvents: { yes: number; no: number };
+    };
+  } | null>(null);
 
   useEffect(() => {
     if (isOpen && event) {
@@ -39,7 +61,7 @@ function FeedbackInsightsModal({ event, isOpen, onClose }) {
     }
   }, [isOpen, event, loadFeedbacks]);
 
-  const loadFeedbacks = useCallback(async () => {
+  const loadFeedbacks = useCallback(async (): Promise<void> => {
     setIsLoading(true);
     try {
       const feedbackList = await EventFeedback.filter({ event_id: event.id });
@@ -58,7 +80,7 @@ function FeedbackInsightsModal({ event, isOpen, onClose }) {
     }
   }, [isOpen, event, loadFeedbacks]);
 
-  const calculateStats = (feedbackList) => {
+  const calculateStats = (feedbackList: any[]): void => {
     if (feedbackList.length === 0) {
       setStats(null);
       return;
@@ -278,19 +300,6 @@ function FeedbackInsightsModal({ event, isOpen, onClose }) {
       </div>
     </Dialog>
   );
-}
-
-StarDisplay.propTypes = {
-  rating: PropTypes.number.isRequired,
-};
-
-FeedbackInsightsModal.propTypes = {
-  event: PropTypes.shape({
-    id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-    name: PropTypes.string,
-  }),
-  isOpen: PropTypes.bool.isRequired,
-  onClose: PropTypes.func.isRequired,
 };
 
 export default FeedbackInsightsModal;

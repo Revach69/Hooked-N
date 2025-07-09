@@ -20,7 +20,17 @@ import * as Sharing from 'expo-sharing';
 const APP_ORIGIN = 'https://example.com';
 
 // --- CSV Helper Functions ---
-const convertToCSV = (dataArray, headers) => {
+interface CSVHeader { key: string; displayName: string }
+interface EventEntity {
+  id: string | number
+  name: string
+  code?: string
+  location?: string
+  starts_at?: string
+  expires_at?: string
+}
+
+const convertToCSV = (dataArray: Record<string, any>[], headers: CSVHeader[]): string => {
   const headerRow = headers.map(h => h.displayName).join(',');
   const dataRows = dataArray.map(obj =>
     headers.map(header => {
@@ -35,7 +45,7 @@ const convertToCSV = (dataArray, headers) => {
   return [headerRow, ...dataRows].join('\r\n');
 };
 
-const downloadCSV = async (csvContent, fileName) => {
+const downloadCSV = async (csvContent: string, fileName: string): Promise<void> => {
   const path = FileSystem.documentDirectory + fileName;
   await FileSystem.writeAsStringAsync(path, csvContent, {
     encoding: FileSystem.EncodingType.UTF8,
@@ -43,7 +53,7 @@ const downloadCSV = async (csvContent, fileName) => {
   await Sharing.shareAsync(path);
 };
 
-const downloadEventData = async (event) => {
+const downloadEventData = async (event: EventEntity): Promise<void> => {
   toast({ type: 'info', text1: `Preparing data export for "${event.name}"...` });
   let feedbackExported = false;
   let feedbackCount = 0;
@@ -145,20 +155,20 @@ const ADMIN_PASSCODE = "HOOKEDADMIN24";
 // Helper to construct relative page URLs, ensuring a leading slash
 const createPageUrl = (path) => `/${path.startsWith('/') ? path.substring(1) : path}`;
 
-export default function AdminDashboard() {
+const AdminDashboard: React.FC = () => {
   const [password, setPassword] = useState('');
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [events, setEvents] = useState([]);
+  const [events, setEvents] = useState<EventEntity[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [downloadingEventId, setDownloadingEventId] = useState(null);
+  const [downloadingEventId, setDownloadingEventId] = useState<string | number | null>(null);
 
-  const [modals, setModals] = useState({
+  const [modals, setModals] = useState<Record<'form' | 'analytics' | 'delete' | 'feedbacks', boolean>>({
     form: false,
     analytics: false,
     delete: false,
     feedbacks: false,
   });
-  const [selectedEvent, setSelectedEvent] = useState(null);
+  const [selectedEvent, setSelectedEvent] = useState<EventEntity | null>(null);
 
   const loadEvents = useCallback(async () => {
     setIsLoading(true);
@@ -178,7 +188,7 @@ export default function AdminDashboard() {
     }
   }, [isAuthenticated, loadEvents]);
 
-  const handlePasswordSubmit = (e) => {
+  const handlePasswordSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
       if (password === ADMIN_PASSCODE) {
         setIsAuthenticated(true);
@@ -212,7 +222,7 @@ export default function AdminDashboard() {
     }
   };
 
-  const handleDownload = async (event) => {
+  const handleDownload = async (event: EventEntity): Promise<void> => {
     setDownloadingEventId(event.id);
     try {
       await downloadEventData(event);
@@ -393,4 +403,6 @@ export default function AdminDashboard() {
       </div>
     </div>
   );
-}
+};
+
+export default AdminDashboard;

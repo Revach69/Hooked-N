@@ -1,4 +1,3 @@
-import PropTypes from 'prop-types';
 import React, { useState, useEffect, useCallback } from 'react';
 import {
   Dialog,
@@ -11,8 +10,33 @@ import { EventProfile, Like, Message } from '../../api/entities';
 import { X, Users, Heart, MessageCircle, Calendar } from 'lucide-react';
 import { format } from 'date-fns';
 
-function EventAnalyticsModal({ event, isOpen, onClose }) {
-  const [analytics, setAnalytics] = useState({
+interface EventData {
+  id: string | number;
+  name: string;
+}
+
+interface Analytics {
+  profiles: any[];
+  likes: any[];
+  messages: any[];
+  stats: {
+    totalProfiles: number;
+    totalLikes: number;
+    mutualMatches: number;
+    totalMessages: number;
+    averageAge: number;
+    genderBreakdown: Record<string, number>;
+  };
+}
+
+export interface EventAnalyticsModalProps {
+  event: EventData;
+  isOpen: boolean;
+  onClose: () => void;
+}
+
+const EventAnalyticsModal: React.FC<EventAnalyticsModalProps> = ({ event, isOpen, onClose }) => {
+  const [analytics, setAnalytics] = useState<Analytics>({
     profiles: [],
     likes: [],
     messages: [],
@@ -22,8 +46,8 @@ function EventAnalyticsModal({ event, isOpen, onClose }) {
       mutualMatches: 0,
       totalMessages: 0,
       averageAge: 0,
-      genderBreakdown: {}
-    }
+      genderBreakdown: {},
+    },
   });
   const [isLoading, setIsLoading] = useState(true);
 
@@ -34,7 +58,7 @@ function EventAnalyticsModal({ event, isOpen, onClose }) {
   }, [isOpen, event, loadAnalytics]);
 
 
-  const loadAnalytics = useCallback(async () => {
+  const loadAnalytics = useCallback(async (): Promise<void> => {
     setIsLoading(true);
     try {
       const [profiles, likes, messages] = await Promise.all([
@@ -83,7 +107,7 @@ function EventAnalyticsModal({ event, isOpen, onClose }) {
     }
   }, [isOpen, event, loadAnalytics]);
 
-  const getProfileName = (sessionId) => {
+  const getProfileName = (sessionId: string): string => {
     const profile = analytics.profiles.find(p => p.session_id === sessionId);
     if (profile && profile.first_name) {
       const shortId = sessionId.split('_').pop()?.substring(0, 8) || sessionId.substring(0, 8);
@@ -211,15 +235,6 @@ function EventAnalyticsModal({ event, isOpen, onClose }) {
       </div>
     </Dialog>
   );
-}
-
-EventAnalyticsModal.propTypes = {
-  event: PropTypes.shape({
-    id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-    name: PropTypes.string,
-  }),
-  isOpen: PropTypes.bool.isRequired,
-  onClose: PropTypes.func.isRequired,
 };
 
 export default EventAnalyticsModal;
