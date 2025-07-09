@@ -18,7 +18,7 @@ import {
   UIManager,
   useColorScheme,
 } from 'react-native';
-import Toast from 'react-native-toast-message';
+import toast from '../lib/toast';
 import { useNavigation } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as ImagePicker from 'expo-image-picker';
@@ -46,6 +46,7 @@ interface DropdownOption {
 interface DropdownProps {
   options: DropdownOption[];
   value: string;
+  // eslint-disable-next-line no-unused-vars
   onChange: (val: string) => void;
   placeholder: string;
   dark?: boolean;
@@ -191,7 +192,7 @@ export default function Consent() {
     try {
       const { file_url } = await UploadFile({ file });
       setFormData(prev => ({ ...prev, profile_photo_url: file_url }));
-      Toast.show({ type: 'success', text1: 'Photo uploaded' });
+      toast({ type: 'success', text1: 'Photo uploaded' });
     } catch (err) {
       console.error('Error uploading photo:', err);
       setError('Failed to upload photo. Please try again.');
@@ -258,13 +259,13 @@ export default function Consent() {
         profile_photo_url: formData.profile_photo_url,
       });
 
-      Toast.show({ type: 'success', text1: 'Profile created!' });
+      toast({ type: 'success', text1: 'Profile created!' });
       Alert.alert('Success', 'Profile created! Welcome to the event.');
       (navigation as any).navigate('Discovery');
     } catch (err) {
       console.error('Error creating profile:', err);
       setError('Failed to create profile. Please try again.');
-      Toast.show({ type: 'error', text1: 'Failed to create profile' });
+      toast({ type: 'error', text1: 'Failed to create profile' });
       Alert.alert('Error', 'Failed to create profile. Please try again.');
       setStep('error');
       setIsSubmitting(false);
@@ -361,7 +362,6 @@ export default function Consent() {
       {step === 'manual' && renderForm()}
       {step === 'processing' && renderProcessing()}
       {step === 'error' && renderError()}
-      <Toast />
     </View>
   );
 }

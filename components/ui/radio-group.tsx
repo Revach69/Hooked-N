@@ -3,6 +3,7 @@ import { View, TouchableOpacity, ViewStyle, Text, StyleSheet } from 'react-nativ
 
 interface RadioGroupProps {
   value: string;
+  // eslint-disable-next-line no-unused-vars
   onValueChange?: (value: string) => void;
   children?: React.ReactNode;
   style?: ViewStyle;
@@ -22,6 +23,7 @@ const RadioGroup: React.FC<RadioGroupProps> = ({ value, onValueChange, children,
 interface RadioGroupItemProps {
   value: string;
   selected?: boolean;
+  // eslint-disable-next-line no-unused-vars
   onSelect?: (value: string) => void;
   style?: ViewStyle;
   children?: React.ReactNode;

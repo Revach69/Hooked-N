@@ -160,12 +160,12 @@ export default function Matches() {
         if (matchToOpen) {
           setSelectedMatch(matchToOpen);
         }
-      } catch {
-        // ignore invalid URL
-      }
-    } catch (e) {
-      // ignore invalid URL
-    }
+        } catch {
+          // ignore invalid URL
+        }
+    };
+    checkInitialUrl();
+
   }, [matches]);
 
   // Check for deep link parameter to auto-open specific chat
@@ -269,7 +269,8 @@ export default function Matches() {
               <Users width={64} height={64} color="#9ca3af" style={{ marginBottom: 16 }} />
               <Text style={styles.emptyTitle}>No matches yet</Text>
               <Text style={styles.emptySubtitle}>
-                Start liking profiles to find your matches! When someone likes you back, they&rsquo;ll appear here.
+                Start liking profiles to find your matches! When someone likes you back, they'll appear here.
+
               </Text>
               <Button
                 onPress={() => navigation.navigate('Discovery')}

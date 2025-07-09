@@ -164,7 +164,7 @@ export default function Home() {
               <View>
                 <Text style={styles.infoTitle}>How it works</Text>
                 <View style={styles.list}>
-                  <Text style={styles.listItem}>• Scan the event&rsquo;s unique QR code</Text>
+                  <Text style={styles.listItem}>• Scan the event&apos;s unique QR code</Text>
                   <Text style={styles.listItem}>• Create a temporary profile (first name only)</Text>
                   <Text style={styles.listItem}>• Discover other singles at this event</Text>
                   <Text style={styles.listItem}>• Match and chat privately</Text>

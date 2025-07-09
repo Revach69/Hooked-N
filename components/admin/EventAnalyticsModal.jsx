@@ -27,6 +27,13 @@ function EventAnalyticsModal({ event, isOpen, onClose }) {
   });
   const [isLoading, setIsLoading] = useState(true);
 
+  useEffect(() => {
+    if (isOpen && event) {
+      loadAnalytics();
+    }
+  }, [isOpen, event, loadAnalytics]);
+
+
   const loadAnalytics = useCallback(async () => {
     setIsLoading(true);
     try {

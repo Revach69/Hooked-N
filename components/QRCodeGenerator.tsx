@@ -2,7 +2,7 @@ import React, { useState, useRef } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import QRCode from 'react-native-qrcode-svg';
 import { Download, AlertCircle } from 'lucide-react-native';
-import Toast from 'react-native-toast-message';
+import toast from '../lib/toast';
 import * as FileSystem from 'expo-file-system';
 
 import { Button } from './ui/button';
@@ -18,7 +18,7 @@ export default function QRCodeGenerator({ url, fileName }: QRCodeGeneratorProps)
 
   const handleDownload = () => {
     if (error) {
-      Toast.show({ type: 'error', text1: 'Cannot download QR code.' });
+      toast({ type: 'error', text1: 'Cannot download QR code.' });
       return;
     }
 
@@ -26,10 +26,10 @@ export default function QRCodeGenerator({ url, fileName }: QRCodeGeneratorProps)
       try {
         const path = FileSystem.documentDirectory + fileName;
         await FileSystem.writeAsStringAsync(path, data, { encoding: FileSystem.EncodingType.Base64 });
-        Toast.show({ type: 'success', text1: 'QR code saved.' });
+        toast({ type: 'success', text1: 'QR code saved.' });
       } catch (e) {
         console.error('Error saving QR code:', e);
-        Toast.show({ type: 'error', text1: 'Failed to save QR code.' });
+        toast({ type: 'error', text1: 'Failed to save QR code.' });
       }
     });
   };

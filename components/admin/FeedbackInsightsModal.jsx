@@ -33,6 +33,12 @@ function FeedbackInsightsModal({ event, isOpen, onClose }) {
   const [isLoading, setIsLoading] = useState(true);
   const [stats, setStats] = useState(null);
 
+  useEffect(() => {
+    if (isOpen && event) {
+      loadFeedbacks();
+    }
+  }, [isOpen, event, loadFeedbacks]);
+
   const loadFeedbacks = useCallback(async () => {
     setIsLoading(true);
     try {
