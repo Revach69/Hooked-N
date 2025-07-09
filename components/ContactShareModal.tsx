@@ -23,6 +23,7 @@ interface ContactInfo {
 
 interface Props {
   matchName: string;
+  // eslint-disable-next-line no-unused-vars
   onConfirm: (info: ContactInfo) => Promise<void> | void;
   onCancel: () => void;
 }

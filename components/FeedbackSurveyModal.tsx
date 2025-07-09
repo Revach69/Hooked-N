@@ -112,6 +112,7 @@ export default function FeedbackSurveyModal({ event, sessionId, onClose }: Props
     }
   };
 
+  // eslint-disable-next-line no-unused-vars
   const StarRating = ({ value, onChange }: { value: string; onChange: (v: string) => void }) => (
     <View style={styles.starRow}>
       {[1, 2, 3, 4, 5].map(r => (

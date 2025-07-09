@@ -13,6 +13,7 @@ export interface Filters {
 
 interface Props {
   filters: Filters;
+  // eslint-disable-next-line no-unused-vars
   onFiltersChange: (f: Filters) => void;
   onClose: () => void;
 }

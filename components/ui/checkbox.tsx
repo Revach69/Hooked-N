@@ -3,6 +3,7 @@ import { TouchableOpacity, Text, StyleSheet, TouchableOpacityProps } from 'react
 
 export interface CheckboxProps extends TouchableOpacityProps {
   checked?: boolean;
+  // eslint-disable-next-line no-unused-vars
   onChange?: (checked: boolean) => void;
 }
 

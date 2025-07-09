@@ -5,10 +5,8 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
-  ScrollView,
   useColorScheme,
   Linking,
-  Modal,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { Heart, Users, User } from 'lucide-react-native';

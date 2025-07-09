@@ -71,7 +71,7 @@ export default function Home() {
       } else {
         alert('Invalid QR code: No event code found in URL.');
       }
-    } catch (error) {
+    } catch {
       if (typeof scannedUrl === 'string' && scannedUrl.trim().length > 3) {
         closeModal();
         navigation.navigate(createPageUrl(`join?code=${scannedUrl.toUpperCase()}`));
@@ -164,7 +164,7 @@ export default function Home() {
               <View>
                 <Text style={styles.infoTitle}>How it works</Text>
                 <View style={styles.list}>
-                  <Text style={styles.listItem}>• Scan the event's unique QR code</Text>
+                  <Text style={styles.listItem}>• Scan the event&apos;s unique QR code</Text>
                   <Text style={styles.listItem}>• Create a temporary profile (first name only)</Text>
                   <Text style={styles.listItem}>• Discover other singles at this event</Text>
                   <Text style={styles.listItem}>• Match and chat privately</Text>

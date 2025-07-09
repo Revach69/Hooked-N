@@ -220,14 +220,6 @@ export default function AdminDashboard() {
     }
   };
 
-  const copyToClipboard = async (text, label) => {
-    try {
-        await Clipboard.setStringAsync(text);
-        toast({ type: 'success', text1: `${label} copied to clipboard!` });
-    } catch (err) {
-        toast({ type: 'error', text1: `Failed to copy ${label}.` });
-    }
-  };
 
   if (!isAuthenticated) {
     return (

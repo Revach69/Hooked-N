@@ -46,6 +46,7 @@ interface DropdownOption {
 interface DropdownProps {
   options: DropdownOption[];
   value: string;
+  // eslint-disable-next-line no-unused-vars
   onChange: (val: string) => void;
   placeholder: string;
   dark?: boolean;
