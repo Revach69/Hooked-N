@@ -188,18 +188,6 @@ export default function AdminDashboard() {
       }
   };
 
-  const loadEvents = async () => {
-    setIsLoading(true);
-    try {
-      const eventList = await Event.list('-created_date');
-      setEvents(eventList);
-    } catch (error) {
-        console.error("Error fetching events:", error);
-        toast({ type: 'error', text1: 'Failed to load events.' });
-    }
-    setIsLoading(false);
-  };
-
 
   const openModal = (modalName, event = null) => {
     setSelectedEvent(event);

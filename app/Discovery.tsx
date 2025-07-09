@@ -2,7 +2,8 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, Image, ActivityIndicator, StyleSheet, SafeAreaView, useColorScheme, AppState, AppStateStatus } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation } from '@react-navigation/native';
-import { createPageUrl } from '../utils';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { RootStackParamList } from './index'; // adjust path if needed
 import { Card, CardContent } from '../components/ui/card';
 import { Button } from '../components/ui/button';
 import { Heart, Filter, Users } from 'lucide-react-native';
@@ -14,7 +15,7 @@ import FirstTimeGuideModal from '../components/FirstTimeGuideModal';
 type Profile = any;
 
 export default function Discovery() {
-  const navigation = useNavigation();
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [currentUserProfile, setCurrentUserProfile] = useState<Profile | null>(null);
   const [filteredProfiles, setFilteredProfiles] = useState<Profile[]>([]);
@@ -35,63 +36,7 @@ export default function Discovery() {
   const [imageErrors, setImageErrors] = useState<Record<string, boolean>>({});
   const colorScheme = useColorScheme();
   const isDark = colorScheme === 'dark';
-
-  const initializeSession = useCallback(async () => {
-    const eventId = await AsyncStorage.getItem('currentEventId');
-    const sessionId = await AsyncStorage.getItem('currentSessionId');
-    if (!eventId || !sessionId) {
-      navigation.navigate(createPageUrl('Home'));
-      return;
-    }
-    setCurrentSessionId(sessionId);
-    const hasSeenGuide = await AsyncStorage.getItem(`hasSeenGuide_${eventId}`);
-    if (!hasSeenGuide) {
-      setShowGuide(true);
-    }
-    try {
-      const events = await Event.filter({ id: eventId });
-      if (events.length > 0) {
-        setCurrentEvent(events[0]);
-      } else {
-        navigation.navigate(createPageUrl('Home'));
-        return;
-      }
-      await Promise.all([loadProfiles(eventId, sessionId), loadLikes(eventId, sessionId)]);
-    } catch (error) {
-      console.error('Error initializing session:', error);
-    }
-    setIsLoading(false);
-  }, [navigation, loadProfiles, loadLikes]);
-
-  useEffect(() => {
-    initializeSession();
-  }, [initializeSession]);
-
-  useEffect(() => {
-    if (currentUserProfile && profiles.length >= 0) {
-      applyFilters();
-    }
-  }, [profiles, filters, currentUserProfile]);
-
-  useEffect(() => {
-    const handleStateChange = (state: AppStateStatus) => {
-      setIsTabActive(state === 'active');
-    };
-    setIsTabActive(AppState.currentState === 'active');
-    const subscription = AppState.addEventListener('change', handleStateChange);
-    return () => subscription.remove();
-  }, []);
-
-  useEffect(() => {
-    if (!currentSessionId || !currentEvent) return;
-    const pollInterval = setInterval(() => {
-      if (isTabActive) {
-        loadProfiles(currentEvent.id, currentSessionId);
-        loadLikes(currentEvent.id, currentSessionId);
-      }
-    }, 60000);
-    return () => clearInterval(pollInterval);
-  }, [currentSessionId, currentEvent, isTabActive, loadProfiles, loadLikes]);
+  
 
   const loadProfiles = useCallback(async (eventId: string, sessionId: string) => {
     try {
@@ -102,21 +47,12 @@ export default function Discovery() {
       setProfiles(otherUsersProfiles);
       if (!userProfile) {
         console.warn('Current user profile not found for session, redirecting.');
-        navigation.navigate(createPageUrl('Home'));
+        navigation.navigate('Home');
       }
     } catch (error) {
       console.error('Error loading profiles:', error);
     }
   }, [navigation]);
-
-  const loadLikes = useCallback(async (eventId: string, sessionId: string) => {
-    try {
-      const likes = await Like.filter({ liker_session_id: sessionId, event_id: eventId });
-      setLikedProfiles(new Set(likes.map((like: any) => like.liked_session_id)));
-    } catch (error) {
-      console.error('Error loading likes:', error);
-    }
-  }, []);
 
   const applyFilters = () => {
     if (!currentUserProfile) {
@@ -145,6 +81,74 @@ export default function Discovery() {
     setFilteredProfiles(tempFiltered);
   };
 
+  const loadLikes = useCallback(async (eventId: string, sessionId: string) => {
+    try {
+      const likes = await Like.filter({ liker_session_id: sessionId, event_id: eventId });
+      setLikedProfiles(new Set(likes.map((like: any) => like.liked_session_id)));
+    } catch (error) {
+      console.error('Error loading likes:', error);
+    }
+  }, []);
+
+  const initializeSession = useCallback(async () => {
+    const eventId = await AsyncStorage.getItem('currentEventId');
+    const sessionId = await AsyncStorage.getItem('currentSessionId');
+    if (!eventId || !sessionId) {
+      navigation.navigate('Home');
+      return;
+    }
+    setCurrentSessionId(sessionId);
+    const hasSeenGuide = await AsyncStorage.getItem(`hasSeenGuide_${eventId}`);
+    if (!hasSeenGuide) {
+      setShowGuide(true);
+    }
+    try {
+      const events = await Event.filter({ id: eventId });
+      if (events.length > 0) {
+        setCurrentEvent(events[0]);
+      } else {
+        navigation.navigate('Home');
+        return;
+      }
+      await Promise.all([loadProfiles(eventId, sessionId), loadLikes(eventId, sessionId)]);
+    } catch (error) {
+      console.error('Error initializing session:', error);
+    }
+    setIsLoading(false);
+  }, [navigation, loadProfiles, loadLikes]);
+
+  useEffect(() => {
+    initializeSession();
+  }, [initializeSession]);
+
+
+  useEffect(() => {
+    if (currentUserProfile && profiles.length >= 0) {
+      applyFilters();
+    }
+  }, [profiles, filters, currentUserProfile, applyFilters]);
+
+  useEffect(() => {
+    const handleStateChange = (state: AppStateStatus) => {
+      setIsTabActive(state === 'active');
+    };
+    setIsTabActive(AppState.currentState === 'active');
+    const subscription = AppState.addEventListener('change', handleStateChange);
+    return () => subscription.remove();
+  }, []);
+
+  useEffect(() => {
+    if (!currentSessionId || !currentEvent) return;
+    const pollInterval = setInterval(() => {
+      if (isTabActive) {
+        loadProfiles(currentEvent.id, currentSessionId);
+        loadLikes(currentEvent.id, currentSessionId);
+      }
+    }, 60000);
+    return () => clearInterval(pollInterval);
+  }, [currentSessionId, currentEvent, isTabActive, loadProfiles, loadLikes]);
+
+
   const handleLike = async (likedProfile: any) => {
     if (likedProfiles.has(likedProfile.session_id) || !currentUserProfile) return;
     const eventId = await AsyncStorage.getItem('currentEventId');
@@ -169,7 +173,7 @@ export default function Discovery() {
         await Like.update(newLike.id, { is_mutual: true, liker_notified_of_match: true });
         await Like.update(theirLikeRecord.id, { is_mutual: true, liked_notified_of_match: true });
         alert(`🎉 It's a Match! You and ${likedProfile.first_name} liked each other.`);
-        navigation.navigate(createPageUrl('Matches'));
+        navigation.navigate('Matches');
       }
     } catch (error) {
       console.error('Error liking profile:', error);
