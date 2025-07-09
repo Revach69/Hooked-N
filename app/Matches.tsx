@@ -23,15 +23,16 @@ export default function Matches() {
   const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
   const [eventId, setEventId] = useState<string | null>(null);
 
-  useEffect(() => {
-    const loadIds = async () => {
-      const sId = await AsyncStorage.getItem('currentSessionId');
-      const eId = await AsyncStorage.getItem('currentEventId');
-      setCurrentSessionId(sId);
-      setEventId(eId);
-    };
-    loadIds();
+  const loadIds = useCallback(async () => {
+    const sId = await AsyncStorage.getItem('currentSessionId');
+    const eId = await AsyncStorage.getItem('currentEventId');
+    setCurrentSessionId(sId);
+    setEventId(eId);
   }, []);
+
+  useEffect(() => {
+    loadIds();
+  }, [loadIds]);
 
   const markMatchesAsNotified = useCallback(async (mutualMatchProfiles) => {
     if (!currentSessionId || !eventId || mutualMatchProfiles.length === 0) return;
@@ -148,26 +149,29 @@ export default function Matches() {
     return () => clearInterval(pollInterval);
   }, [loadMatches, isTabActive]);
   
-  // Check for deep link parameter to auto-open specific chat
-  useEffect(() => {
-    const checkInitialUrl = async () => {
-      const initialUrl = await Linking.getInitialURL();
-      if (!initialUrl) return;
-      try {
-        const url = new URL(initialUrl);
-        const openChatSessionId = url.searchParams.get('openChat');
-        if (openChatSessionId && matches.length > 0) {
-          const matchToOpen = matches.find(m => m.session_id === openChatSessionId);
-          if (matchToOpen) {
-            setSelectedMatch(matchToOpen);
-          }
+  const checkInitialUrl = useCallback(async () => {
+    const initialUrl = await Linking.getInitialURL();
+    if (!initialUrl) return;
+    try {
+      const url = new URL(initialUrl);
+      const openChatSessionId = url.searchParams.get('openChat');
+      if (openChatSessionId && matches.length > 0) {
+        const matchToOpen = matches.find(m => m.session_id === openChatSessionId);
+        if (matchToOpen) {
+          setSelectedMatch(matchToOpen);
         }
       } catch {
         // ignore invalid URL
       }
-    };
-    checkInitialUrl();
+    } catch (e) {
+      // ignore invalid URL
+    }
   }, [matches]);
+
+  // Check for deep link parameter to auto-open specific chat
+  useEffect(() => {
+    checkInitialUrl();
+  }, [checkInitialUrl]);
 
   if (isLoading) {
     return (

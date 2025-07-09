@@ -1,5 +1,5 @@
 import PropTypes from 'prop-types';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Dialog,
   DialogHeader,
@@ -27,13 +27,7 @@ function EventAnalyticsModal({ event, isOpen, onClose }) {
   });
   const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    if (isOpen && event) {
-      loadAnalytics();
-    }
-  }, [isOpen, event]);
-
-  const loadAnalytics = async () => {
+  const loadAnalytics = useCallback(async () => {
     setIsLoading(true);
     try {
       const [profiles, likes, messages] = await Promise.all([
@@ -74,7 +68,13 @@ function EventAnalyticsModal({ event, isOpen, onClose }) {
       console.error('Error loading analytics:', error);
     }
     setIsLoading(false);
-  };
+  }, [event]);
+
+  useEffect(() => {
+    if (isOpen && event) {
+      loadAnalytics();
+    }
+  }, [isOpen, event, loadAnalytics]);
 
   const getProfileName = (sessionId) => {
     const profile = analytics.profiles.find(p => p.session_id === sessionId);
