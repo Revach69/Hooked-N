@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { View, Text, ScrollView, StyleSheet } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -16,11 +16,7 @@ export default function Home() {
   const navigation = useNavigation<any>();
   const [activeModal, setActiveModal] = useState<null | 'qrScanner' | 'manualCodeEntry'>(null);
 
-  useEffect(() => {
-    checkActiveEventSession();
-  }, []);
-
-  const checkActiveEventSession = async () => {
+  const checkActiveEventSession = useCallback(async () => {
     const eventId = await AsyncStorage.getItem('currentEventId');
     const sessionId = await AsyncStorage.getItem('currentSessionId');
 
@@ -59,7 +55,11 @@ export default function Home() {
         'currentProfilePhotoUrl',
       ]);
     }
-  };
+  }, [navigation]);
+
+  useEffect(() => {
+    checkActiveEventSession();
+  }, [checkActiveEventSession]);
 
   const handleScanSuccess = (scannedUrl: string) => {
     try {
