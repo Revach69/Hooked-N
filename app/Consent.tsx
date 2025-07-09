@@ -190,8 +190,8 @@ export default function Consent() {
     } as any;
 
     try {
-      const { file_url } = await UploadFile({ file });
-      setFormData(prev => ({ ...prev, profile_photo_url: file_url }));
+      const { url } = await UploadFile(file.uri);
+      setFormData(prev => ({ ...prev, profile_photo_url: url }));
       toast({ type: 'success', text1: 'Photo uploaded' });
     } catch (err) {
       console.error('Error uploading photo:', err);

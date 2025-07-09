@@ -116,9 +116,8 @@ export default function Profile() {
       setLocalPhotoUri(asset.uri);
       setIsUploading(true);
       try {
-        const file = { uri: asset.uri, name: asset.fileName ?? 'photo.jpg', type: asset.mimeType ?? 'image/jpeg' } as any;
-        const { file_url } = await UploadFile({ file });
-        await User.updateMyUserData({ profile_photo_url: file_url });
+        const { url } = await UploadFile(asset.uri);
+        await User.updateMyUserData({ profile_photo_url: url });
         toast({ type: 'success', text1: 'Profile photo updated!' });
         await loadData();
         setLocalPhotoUri(null);
