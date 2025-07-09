@@ -1,4 +1,4 @@
-import PropTypes from 'prop-types';
+import React from 'react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -10,7 +10,14 @@ import {
   AlertDialogTitle,
 } from '../ui/alert-dialog';
 
-function DeleteConfirmationDialog({ isOpen, onClose, onConfirm, eventName }) {
+export interface DeleteConfirmationDialogProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onConfirm: () => void;
+  eventName?: string;
+}
+
+const DeleteConfirmationDialog: React.FC<DeleteConfirmationDialogProps> = ({ isOpen, onClose, onConfirm, eventName }) => {
   return (
     <AlertDialog open={isOpen} onOpenChange={onClose}>
       <AlertDialogContent className="bg-white dark:bg-gray-900 text-gray-800 dark:text-white rounded-xl shadow-xl p-6 max-w-md w-full border border-gray-200 dark:border-gray-700">
@@ -43,13 +50,6 @@ function DeleteConfirmationDialog({ isOpen, onClose, onConfirm, eventName }) {
       </AlertDialogContent>
     </AlertDialog>
   );
-}
-
-DeleteConfirmationDialog.propTypes = {
-  isOpen: PropTypes.bool.isRequired,
-  onClose: PropTypes.func.isRequired,
-  onConfirm: PropTypes.func.isRequired,
-  eventName: PropTypes.string,
 };
 
 export default DeleteConfirmationDialog;

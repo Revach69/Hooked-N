@@ -1,5 +1,4 @@
 
-import PropTypes from 'prop-types';
 import React, { useState, useEffect } from 'react';
 import {
   Dialog,
@@ -16,8 +15,36 @@ import { X, Save, Loader2 } from 'lucide-react';
 import { toast } from "../ui/sonner";
 import { format } from 'date-fns';
 
-function EventFormModal({ event, isOpen, onClose, onSuccess }) {
-  const [formData, setFormData] = useState({
+interface EventData {
+  id: string | number;
+  name?: string;
+  code?: string;
+  location?: string;
+  description?: string;
+  organizer_email?: string;
+  starts_at?: string;
+  expires_at?: string;
+}
+
+interface FormData {
+  name: string;
+  code: string;
+  location: string;
+  description: string;
+  organizer_email: string;
+  starts_at: string;
+  expires_at: string;
+}
+
+export interface EventFormModalProps {
+  event?: EventData | null;
+  isOpen: boolean;
+  onClose: () => void;
+  onSuccess: () => void;
+}
+
+const EventFormModal: React.FC<EventFormModalProps> = ({ event, isOpen, onClose, onSuccess }) => {
+  const [formData, setFormData] = useState<FormData>({
     name: '',
     code: '',
     location: '',
@@ -27,7 +54,7 @@ function EventFormModal({ event, isOpen, onClose, onSuccess }) {
     expires_at: '',
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [formErrors, setFormErrors] = useState({});
+  const [formErrors, setFormErrors] = useState<Partial<Record<keyof FormData, string>>>({});
 
   useEffect(() => {
     if (isOpen) {
@@ -51,7 +78,7 @@ function EventFormModal({ event, isOpen, onClose, onSuccess }) {
     }
   }, [event, isOpen]);
 
-  const handleInputChange = (field, value) => {
+  const handleInputChange = (field: keyof FormData, value: string) => {
     let processedValue = value;
     if (field === 'code') {
       processedValue = value.toUpperCase(); // Ensure code is always uppercase
@@ -62,8 +89,8 @@ function EventFormModal({ event, isOpen, onClose, onSuccess }) {
     }
   };
 
-  const validateForm = () => {
-    const errors = {};
+  const validateForm = (): boolean => {
+    const errors: Partial<Record<keyof FormData, string>> = {};
     if (!formData.starts_at) {
       errors.starts_at = "Start date is required.";
     }
@@ -81,7 +108,7 @@ function EventFormModal({ event, isOpen, onClose, onSuccess }) {
     return Object.keys(errors).length === 0;
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>): Promise<void> => {
     e.preventDefault();
     if (!validateForm()) {
       toast.error("Please fix the errors before submitting.");
@@ -220,22 +247,6 @@ function EventFormModal({ event, isOpen, onClose, onSuccess }) {
       </DialogContent>
     </Dialog>
   );
-}
-
-EventFormModal.propTypes = {
-  event: PropTypes.shape({
-    id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-    name: PropTypes.string,
-    code: PropTypes.string,
-    location: PropTypes.string,
-    description: PropTypes.string,
-    organizer_email: PropTypes.string,
-    starts_at: PropTypes.oneOfType([PropTypes.string, PropTypes.instanceOf(Date)]),
-    expires_at: PropTypes.oneOfType([PropTypes.string, PropTypes.instanceOf(Date)]),
-  }),
-  isOpen: PropTypes.bool.isRequired,
-  onClose: PropTypes.func.isRequired,
-  onSuccess: PropTypes.func.isRequired,
 };
 
 export default EventFormModal;
