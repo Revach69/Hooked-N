@@ -52,6 +52,12 @@ function FeedbackInsightsModal({ event, isOpen, onClose }) {
     }
   }, [event]);
 
+  useEffect(() => {
+    if (isOpen && event) {
+      loadFeedbacks();
+    }
+  }, [isOpen, event, loadFeedbacks]);
+
   const calculateStats = (feedbackList) => {
     if (feedbackList.length === 0) {
       setStats(null);

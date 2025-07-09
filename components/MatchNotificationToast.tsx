@@ -22,6 +22,7 @@ export default function MatchNotificationToast({ visible, matchName, onDismiss, 
           <PartyPopper size={40} color="#facc15" />
           <View style={styles.textContainer}>
               <Text style={styles.title}>It&apos;s a Match!</Text>
+
             <Text style={styles.message}>You and {matchName} liked each other.</Text>
           </View>
         </View>

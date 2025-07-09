@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Event, EventProfile, Like, Message, EventFeedback } from '../api/entities';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
@@ -160,11 +160,23 @@ export default function AdminDashboard() {
   });
   const [selectedEvent, setSelectedEvent] = useState(null);
 
+  const loadEvents = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const eventList = await Event.list('-created_date');
+      setEvents(eventList);
+    } catch (error) {
+      console.error("Error fetching events:", error);
+      toast.error("Failed to load events.");
+    }
+    setIsLoading(false);
+  }, []);
+
   useEffect(() => {
     if (isAuthenticated) {
       loadEvents();
     }
-  }, [isAuthenticated]);
+  }, [isAuthenticated, loadEvents]);
 
   const handlePasswordSubmit = (e) => {
     e.preventDefault();
@@ -187,6 +199,7 @@ export default function AdminDashboard() {
     }
     setIsLoading(false);
   };
+
 
   const openModal = (modalName, event = null) => {
     setSelectedEvent(event);

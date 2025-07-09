@@ -33,6 +33,7 @@ function EventAnalyticsModal({ event, isOpen, onClose }) {
     }
   }, [isOpen, event, loadAnalytics]);
 
+
   const loadAnalytics = useCallback(async () => {
     setIsLoading(true);
     try {
@@ -75,6 +76,12 @@ function EventAnalyticsModal({ event, isOpen, onClose }) {
     }
     setIsLoading(false);
   }, [event]);
+
+  useEffect(() => {
+    if (isOpen && event) {
+      loadAnalytics();
+    }
+  }, [isOpen, event, loadAnalytics]);
 
   const getProfileName = (sessionId) => {
     const profile = analytics.profiles.find(p => p.session_id === sessionId);

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
@@ -112,47 +112,49 @@ export default function Consent() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
 
-  useEffect(() => {
-    const loadProfile = async () => {
-      const saved = await getLocalProfile();
-      if (saved) {
-        setFormData(prev => ({
-          ...prev,
-          first_name: saved.fullName || prev.first_name,
-          age: saved.age != null ? String(saved.age) : prev.age,
-          gender_identity: saved.gender || prev.gender_identity,
-          interested_in: Array.isArray(saved.interests)
-            ? saved.interests.join(', ')
-            : prev.interested_in,
-          profile_photo_url: (saved as any).profile_photo_url || prev.profile_photo_url,
-        }));
-      }
-    };
-    loadProfile();
+  const loadProfile = useCallback(async () => {
+    const saved = await getLocalProfile();
+    if (saved) {
+      setFormData(prev => ({
+        ...prev,
+        first_name: saved.fullName || prev.first_name,
+        age: saved.age != null ? String(saved.age) : prev.age,
+        gender_identity: saved.gender || prev.gender_identity,
+        interested_in: Array.isArray(saved.interests)
+          ? saved.interests.join(', ')
+          : prev.interested_in,
+        profile_photo_url: (saved as any).profile_photo_url || prev.profile_photo_url,
+      }));
+    }
   }, []);
 
   useEffect(() => {
-    const fetchEvent = async () => {
-      const eventId = await AsyncStorage.getItem('currentEventId');
-      if (!eventId) {
-        // @ts-ignore - navigation type not specified
+    loadProfile();
+  }, [loadProfile]);
+
+  const fetchEvent = useCallback(async () => {
+    const eventId = await AsyncStorage.getItem('currentEventId');
+    if (!eventId) {
+      // @ts-ignore - navigation type not specified
+      (navigation as any).navigate('Home');
+      return;
+    }
+    try {
+      const events = await Event.filter({ id: eventId });
+      if (events.length > 0) {
+        setEvent(events[0]);
+      } else {
         (navigation as any).navigate('Home');
-        return;
       }
-      try {
-        const events = await Event.filter({ id: eventId });
-        if (events.length > 0) {
-          setEvent(events[0]);
-        } else {
-          (navigation as any).navigate('Home');
-        }
-      } catch (err) {
-        console.error('Error fetching event details:', err);
-        (navigation as any).navigate('Home');
-      }
-    };
-    fetchEvent();
+    } catch (err) {
+      console.error('Error fetching event details:', err);
+      (navigation as any).navigate('Home');
+    }
   }, [navigation]);
+
+  useEffect(() => {
+    fetchEvent();
+  }, [fetchEvent]);
 
   useEffect(() => {
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
