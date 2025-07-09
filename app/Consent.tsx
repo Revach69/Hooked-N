@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
@@ -18,7 +18,7 @@ import {
   UIManager,
   useColorScheme,
 } from 'react-native';
-import Toast from 'react-native-toast-message';
+import toast from '../lib/toast';
 import { useNavigation } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as ImagePicker from 'expo-image-picker';
@@ -46,6 +46,7 @@ interface DropdownOption {
 interface DropdownProps {
   options: DropdownOption[];
   value: string;
+  // eslint-disable-next-line no-unused-vars
   onChange: (val: string) => void;
   placeholder: string;
   dark?: boolean;
@@ -111,47 +112,49 @@ export default function Consent() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
 
-  useEffect(() => {
-    const loadProfile = async () => {
-      const saved = await getLocalProfile();
-      if (saved) {
-        setFormData(prev => ({
-          ...prev,
-          first_name: saved.fullName || prev.first_name,
-          age: saved.age != null ? String(saved.age) : prev.age,
-          gender_identity: saved.gender || prev.gender_identity,
-          interested_in: Array.isArray(saved.interests)
-            ? saved.interests.join(', ')
-            : prev.interested_in,
-          profile_photo_url: (saved as any).profile_photo_url || prev.profile_photo_url,
-        }));
-      }
-    };
-    loadProfile();
+  const loadProfile = useCallback(async () => {
+    const saved = await getLocalProfile();
+    if (saved) {
+      setFormData(prev => ({
+        ...prev,
+        first_name: saved.fullName || prev.first_name,
+        age: saved.age != null ? String(saved.age) : prev.age,
+        gender_identity: saved.gender || prev.gender_identity,
+        interested_in: Array.isArray(saved.interests)
+          ? saved.interests.join(', ')
+          : prev.interested_in,
+        profile_photo_url: (saved as any).profile_photo_url || prev.profile_photo_url,
+      }));
+    }
   }, []);
 
   useEffect(() => {
-    const fetchEvent = async () => {
-      const eventId = await AsyncStorage.getItem('currentEventId');
-      if (!eventId) {
-        // @ts-ignore - navigation type not specified
+    loadProfile();
+  }, [loadProfile]);
+
+  const fetchEvent = useCallback(async () => {
+    const eventId = await AsyncStorage.getItem('currentEventId');
+    if (!eventId) {
+      // @ts-ignore - navigation type not specified
+      (navigation as any).navigate('Home');
+      return;
+    }
+    try {
+      const events = await Event.filter({ id: eventId });
+      if (events.length > 0) {
+        setEvent(events[0]);
+      } else {
         (navigation as any).navigate('Home');
-        return;
       }
-      try {
-        const events = await Event.filter({ id: eventId });
-        if (events.length > 0) {
-          setEvent(events[0]);
-        } else {
-          (navigation as any).navigate('Home');
-        }
-      } catch (err) {
-        console.error('Error fetching event details:', err);
-        (navigation as any).navigate('Home');
-      }
-    };
-    fetchEvent();
+    } catch (err) {
+      console.error('Error fetching event details:', err);
+      (navigation as any).navigate('Home');
+    }
   }, [navigation]);
+
+  useEffect(() => {
+    fetchEvent();
+  }, [fetchEvent]);
 
   useEffect(() => {
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
@@ -189,7 +192,7 @@ export default function Consent() {
     try {
       const { file_url } = await UploadFile({ file });
       setFormData(prev => ({ ...prev, profile_photo_url: file_url }));
-      Toast.show({ type: 'success', text1: 'Photo uploaded' });
+      toast({ type: 'success', text1: 'Photo uploaded' });
     } catch (err) {
       console.error('Error uploading photo:', err);
       setError('Failed to upload photo. Please try again.');
@@ -256,13 +259,13 @@ export default function Consent() {
         profile_photo_url: formData.profile_photo_url,
       });
 
-      Toast.show({ type: 'success', text1: 'Profile created!' });
+      toast({ type: 'success', text1: 'Profile created!' });
       Alert.alert('Success', 'Profile created! Welcome to the event.');
       (navigation as any).navigate('Discovery');
     } catch (err) {
       console.error('Error creating profile:', err);
       setError('Failed to create profile. Please try again.');
-      Toast.show({ type: 'error', text1: 'Failed to create profile' });
+      toast({ type: 'error', text1: 'Failed to create profile' });
       Alert.alert('Error', 'Failed to create profile. Please try again.');
       setStep('error');
       setIsSubmitting(false);
@@ -359,7 +362,6 @@ export default function Consent() {
       {step === 'manual' && renderForm()}
       {step === 'processing' && renderProcessing()}
       {step === 'error' && renderError()}
-      <Toast />
     </View>
   );
 }

@@ -88,13 +88,13 @@ export default function ChatModal({ match, onClose }: Props) {
       }
     }, 30000);
     return () => clearInterval(interval);
-  }, [sessionId, eventId, matchId, isTabActive, loadMessages]);
+  }, [sessionId, eventId, matchId, isTabActive, loadMessages, loadContactShares]);
 
   useEffect(() => {
     scrollRef.current?.scrollToEnd({ animated: true });
   }, [messages]);
 
-  const loadContactShares = async () => {
+  const loadContactShares = useCallback(async () => {
     if (!eventId || !matchId || !sessionId) return;
     try {
       const mine = await ContactShare.filter({ event_id: eventId, match_id: matchId, sharer_session_id: sessionId });
@@ -109,7 +109,7 @@ export default function ChatModal({ match, onClose }: Props) {
     } catch (e) {
       console.error('Error loading contact shares:', e);
     }
-  };
+  }, [eventId, matchId, sessionId, match.session_id]);
   const sendMessage = async () => {
     if (!newMessage.trim()) return;
     if (!sessionId || !eventId || !matchId) return;

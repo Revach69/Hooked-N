@@ -1,5 +1,5 @@
 import PropTypes from 'prop-types';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Dialog,
   DialogHeader,
@@ -37,9 +37,9 @@ function FeedbackInsightsModal({ event, isOpen, onClose }) {
     if (isOpen && event) {
       loadFeedbacks();
     }
-  }, [isOpen, event]);
+  }, [isOpen, event, loadFeedbacks]);
 
-  const loadFeedbacks = async () => {
+  const loadFeedbacks = useCallback(async () => {
     setIsLoading(true);
     try {
       const feedbackList = await EventFeedback.filter({ event_id: event.id });
@@ -50,7 +50,13 @@ function FeedbackInsightsModal({ event, isOpen, onClose }) {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [event]);
+
+  useEffect(() => {
+    if (isOpen && event) {
+      loadFeedbacks();
+    }
+  }, [isOpen, event, loadFeedbacks]);
 
   const calculateStats = (feedbackList) => {
     if (feedbackList.length === 0) {

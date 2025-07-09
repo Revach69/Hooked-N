@@ -4,6 +4,7 @@ import { Camera, CameraType, type BarCodeScanningResult } from 'expo-camera';
 import { Camera as CameraIcon, X } from 'lucide-react-native';
 
 interface Props {
+  // eslint-disable-next-line no-unused-vars
   onScan: (value: string) => void;
   onClose: () => void;
   onSwitchToManual?: () => void;

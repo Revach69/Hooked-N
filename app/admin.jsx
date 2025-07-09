@@ -1,12 +1,13 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Event, EventProfile, Like, Message, EventFeedback } from '../api/entities';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '../components/ui/card';
 import { Badge } from '../components/ui/badge';
 import { Copy, Download, Loader2, PlusCircle, BarChart2, Edit, Trash2, FileImage, MessageSquare, Hash, MapPin } from 'lucide-react';
-import { toast, Toaster } from "../components/ui/sonner";
+import toast from "../lib/toast";
+import { Toaster } from "../components/ui/sonner";
 import QRCodeGenerator from '../components/QRCodeGenerator';
 import EventFormModal from '../components/admin/EventFormModal';
 import EventAnalyticsModal from '../components/admin/EventAnalyticsModal';
@@ -43,7 +44,7 @@ const downloadCSV = async (csvContent, fileName) => {
 };
 
 const downloadEventData = async (event) => {
-  toast.info(`Preparing data export for "${event.name}"...`);
+  toast({ type: 'info', text1: `Preparing data export for "${event.name}"...` });
   let feedbackExported = false;
   let feedbackCount = 0;
 
@@ -130,11 +131,11 @@ const downloadEventData = async (event) => {
     } else {
       successMessage += ` (No feedback data found or feedback export skipped).`;
     }
-    toast.success(successMessage);
+      toast({ type: 'success', text1: successMessage });
 
   } catch (error) {
     console.error(`Error downloading data for event ${event.id}:`, error);
-    toast.error(`Failed to download event data. Please try again.`);
+      toast({ type: 'error', text1: 'Failed to download event data. Please try again.' });
   }
 };
 // --- End Helper Functions ---
@@ -159,23 +160,7 @@ export default function AdminDashboard() {
   });
   const [selectedEvent, setSelectedEvent] = useState(null);
 
-  useEffect(() => {
-    if (isAuthenticated) {
-      loadEvents();
-    }
-  }, [isAuthenticated]);
-
-  const handlePasswordSubmit = (e) => {
-    e.preventDefault();
-    if (password === ADMIN_PASSCODE) {
-      setIsAuthenticated(true);
-      toast.success("Authentication successful!");
-    } else {
-      toast.error("Incorrect passcode.");
-    }
-  };
-
-  const loadEvents = async () => {
+  const loadEvents = useCallback(async () => {
     setIsLoading(true);
     try {
       const eventList = await Event.list('-created_date');
@@ -185,7 +170,36 @@ export default function AdminDashboard() {
       toast.error("Failed to load events.");
     }
     setIsLoading(false);
+  }, []);
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      loadEvents();
+    }
+  }, [isAuthenticated, loadEvents]);
+
+  const handlePasswordSubmit = (e) => {
+    e.preventDefault();
+      if (password === ADMIN_PASSCODE) {
+        setIsAuthenticated(true);
+        toast({ type: 'success', text1: 'Authentication successful!' });
+      } else {
+        toast({ type: 'error', text1: 'Incorrect passcode.' });
+      }
   };
+
+  const loadEvents = async () => {
+    setIsLoading(true);
+    try {
+      const eventList = await Event.list('-created_date');
+      setEvents(eventList);
+    } catch (error) {
+        console.error("Error fetching events:", error);
+        toast({ type: 'error', text1: 'Failed to load events.' });
+    }
+    setIsLoading(false);
+  };
+
 
   const openModal = (modalName, event = null) => {
     setSelectedEvent(event);
@@ -201,11 +215,11 @@ export default function AdminDashboard() {
     if (!selectedEvent) return;
     try {
       await Event.delete(selectedEvent.id);
-      toast.success(`Event "${selectedEvent.name}" deleted successfully.`);
+        toast({ type: 'success', text1: `Event "${selectedEvent.name}" deleted successfully.` });
       closeModal();
       loadEvents();
     } catch (error) {
-      toast.error("Failed to delete event. See console for details.");
+        toast({ type: 'error', text1: 'Failed to delete event. See console for details.' });
       console.error("Delete error:", error);
     }
   };
@@ -331,7 +345,7 @@ export default function AdminDashboard() {
                         <Button
                           onClick={() => {
                             Clipboard.setStringAsync(`${APP_ORIGIN}${createPageUrl(`join?code=${event.code?.toUpperCase() || ''}`)}`);
-                            toast.success('Join link copied to clipboard!');
+                              toast({ type: 'success', text1: 'Join link copied to clipboard!' });
                           }}
                           variant="outline"
                           size="icon"
@@ -361,7 +375,7 @@ export default function AdminDashboard() {
                       </Button>
                       <Button
                         variant="outline"
-                        onClick={() => toast.info("Coming soon!")}
+                          onClick={() => toast({ type: 'info', text1: 'Coming soon!' })}
                         className="border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600"
                       >
                         <FileImage className="h-4 w-4 mr-2" />

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, Image, ActivityIndicator, StyleSheet, SafeAreaView, useColorScheme, AppState, AppStateStatus } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation } from '@react-navigation/native';
@@ -36,9 +36,36 @@ export default function Discovery() {
   const colorScheme = useColorScheme();
   const isDark = colorScheme === 'dark';
 
+  const initializeSession = useCallback(async () => {
+    const eventId = await AsyncStorage.getItem('currentEventId');
+    const sessionId = await AsyncStorage.getItem('currentSessionId');
+    if (!eventId || !sessionId) {
+      navigation.navigate(createPageUrl('Home'));
+      return;
+    }
+    setCurrentSessionId(sessionId);
+    const hasSeenGuide = await AsyncStorage.getItem(`hasSeenGuide_${eventId}`);
+    if (!hasSeenGuide) {
+      setShowGuide(true);
+    }
+    try {
+      const events = await Event.filter({ id: eventId });
+      if (events.length > 0) {
+        setCurrentEvent(events[0]);
+      } else {
+        navigation.navigate(createPageUrl('Home'));
+        return;
+      }
+      await Promise.all([loadProfiles(eventId, sessionId), loadLikes(eventId, sessionId)]);
+    } catch (error) {
+      console.error('Error initializing session:', error);
+    }
+    setIsLoading(false);
+  }, [navigation, loadProfiles, loadLikes]);
+
   useEffect(() => {
     initializeSession();
-  }, []);
+  }, [initializeSession]);
 
   useEffect(() => {
     if (currentUserProfile && profiles.length >= 0) {
@@ -64,36 +91,9 @@ export default function Discovery() {
       }
     }, 60000);
     return () => clearInterval(pollInterval);
-  }, [currentSessionId, currentEvent, isTabActive]);
+  }, [currentSessionId, currentEvent, isTabActive, loadProfiles, loadLikes]);
 
-  const initializeSession = async () => {
-    const eventId = await AsyncStorage.getItem('currentEventId');
-    const sessionId = await AsyncStorage.getItem('currentSessionId');
-    if (!eventId || !sessionId) {
-      navigation.navigate(createPageUrl('Home'));
-      return;
-    }
-    setCurrentSessionId(sessionId);
-    const hasSeenGuide = await AsyncStorage.getItem(`hasSeenGuide_${eventId}`);
-    if (!hasSeenGuide) {
-      setShowGuide(true);
-    }
-    try {
-      const events = await Event.filter({ id: eventId });
-      if (events.length > 0) {
-        setCurrentEvent(events[0]);
-      } else {
-        navigation.navigate(createPageUrl('Home'));
-        return;
-      }
-      await Promise.all([loadProfiles(eventId, sessionId), loadLikes(eventId, sessionId)]);
-    } catch (error) {
-      console.error('Error initializing session:', error);
-    }
-    setIsLoading(false);
-  };
-
-  const loadProfiles = async (eventId: string, sessionId: string) => {
+  const loadProfiles = useCallback(async (eventId: string, sessionId: string) => {
     try {
       const allVisibleProfiles = await EventProfile.filter({ event_id: eventId, is_visible: true });
       const userProfile = allVisibleProfiles.find((p: any) => p.session_id === sessionId);
@@ -107,16 +107,16 @@ export default function Discovery() {
     } catch (error) {
       console.error('Error loading profiles:', error);
     }
-  };
+  }, [navigation]);
 
-  const loadLikes = async (eventId: string, sessionId: string) => {
+  const loadLikes = useCallback(async (eventId: string, sessionId: string) => {
     try {
       const likes = await Like.filter({ liker_session_id: sessionId, event_id: eventId });
       setLikedProfiles(new Set(likes.map((like: any) => like.liked_session_id)));
     } catch (error) {
       console.error('Error loading likes:', error);
     }
-  };
+  }, []);
 
   const applyFilters = () => {
     if (!currentUserProfile) {
