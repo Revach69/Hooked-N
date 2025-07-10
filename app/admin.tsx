@@ -1,13 +1,38 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
+import {
+  View,
+  Text,
+  ScrollView,
+  StyleSheet,
+  ActivityIndicator,
+} from 'react-native';
 import { Event, EventProfile, Like, Message, EventFeedback } from '../api/entities';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
-import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '../components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardFooter,
+} from '../components/ui/card';
 import { Badge } from '../components/ui/badge';
-import { Copy, Download, Loader2, PlusCircle, BarChart2, Edit, Trash2, FileImage, MessageSquare, Hash, MapPin } from 'lucide-react';
-import toast from "../lib/toast";
-import { Toaster } from "../components/ui/sonner";
+import {
+  Copy,
+  Download,
+  Loader2,
+  PlusCircle,
+  BarChart2,
+  Edit,
+  Trash2,
+  FileImage,
+  MessageSquare,
+  Hash,
+  MapPin,
+} from 'lucide-react-native';
+import toast from '../lib/toast';
+import { Toaster } from '../components/ui/sonner';
 import QRCodeGenerator from '../components/QRCodeGenerator';
 import EventFormModal from '../components/admin/EventFormModal';
 import EventAnalyticsModal from '../components/admin/EventAnalyticsModal';
@@ -153,7 +178,8 @@ const downloadEventData = async (event: EventEntity): Promise<void> => {
 const ADMIN_PASSCODE = "HOOKEDADMIN24";
 
 // Helper to construct relative page URLs, ensuring a leading slash
-const createPageUrl = (path) => `/${path.startsWith('/') ? path.substring(1) : path}`;
+const createPageUrl = (path: string): string =>
+  `/${path.startsWith('/') ? path.substring(1) : path}`;
 
 const AdminDashboard: React.FC = () => {
   const [password, setPassword] = useState('');
@@ -174,10 +200,18 @@ const AdminDashboard: React.FC = () => {
     setIsLoading(true);
     try {
       const eventList = await Event.list('-created_date');
-      setEvents(eventList);
+      const mappedList: EventEntity[] = eventList.map((e: any) => ({
+        id: e.id,
+        name: e.name ?? '',
+        code: e.code,
+        location: e.location,
+        starts_at: e.starts_at,
+        expires_at: e.expires_at,
+      }));
+      setEvents(mappedList);
     } catch (error) {
-      console.error("Error fetching events:", error);
-      toast.error("Failed to load events.");
+      console.error('Error fetching events:', error);
+      toast({ type: 'error', text1: 'Failed to load events.' });
     }
     setIsLoading(false);
   }, []);
@@ -188,18 +222,19 @@ const AdminDashboard: React.FC = () => {
     }
   }, [isAuthenticated, loadEvents]);
 
-  const handlePasswordSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-      if (password === ADMIN_PASSCODE) {
-        setIsAuthenticated(true);
-        toast({ type: 'success', text1: 'Authentication successful!' });
-      } else {
-        toast({ type: 'error', text1: 'Incorrect passcode.' });
-      }
+  const handlePasswordSubmit = () => {
+    if (password === ADMIN_PASSCODE) {
+      setIsAuthenticated(true);
+      toast({ type: 'success', text1: 'Authentication successful!' });
+    } else {
+      toast({ type: 'error', text1: 'Incorrect passcode.' });
+    }
   };
 
-
-  const openModal = (modalName, event = null) => {
+  const openModal = (
+    modalName: 'form' | 'analytics' | 'delete' | 'feedbacks',
+    event: EventEntity | null = null
+  ) => {
     setSelectedEvent(event);
     setModals(prev => ({ ...prev, [modalName]: true }));
   };
@@ -212,13 +247,13 @@ const AdminDashboard: React.FC = () => {
   const handleDeleteEvent = async () => {
     if (!selectedEvent) return;
     try {
-      await Event.delete(selectedEvent.id);
-        toast({ type: 'success', text1: `Event "${selectedEvent.name}" deleted successfully.` });
+      await Event.delete(String(selectedEvent.id));
+      toast({ type: 'success', text1: `Event "${selectedEvent.name}" deleted successfully.` });
       closeModal();
       loadEvents();
     } catch (error) {
-        toast({ type: 'error', text1: 'Failed to delete event. See console for details.' });
-      console.error("Delete error:", error);
+      toast({ type: 'error', text1: 'Failed to delete event. See console for details.' });
+      console.error('Delete error:', error);
     }
   };
 
@@ -231,178 +266,234 @@ const AdminDashboard: React.FC = () => {
     }
   };
 
-
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen bg-gray-100 dark:bg-gray-900 flex flex-col items-center justify-center p-4">
-        <Toaster richColors position="top-center" />
-        <Card className="w-full max-w-md shadow-xl bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+      <View style={[styles.center, styles.authContainer]}>
+        <Toaster position="top" />
+        <Card style={styles.authCard}>
           <CardHeader>
-            <CardTitle className="text-2xl font-bold text-center text-gray-800 dark:text-gray-100">Admin Access</CardTitle>
+            <CardTitle>
+              <Text style={styles.authTitle}>Admin Access</Text>
+            </CardTitle>
           </CardHeader>
           <CardContent>
-            <form onSubmit={handlePasswordSubmit} className="space-y-6">
-              <Input
-                id="password"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="Enter Passcode"
-                className="mt-1 block w-full bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white"
-                required
-                autoFocus
-              />
-              <Button type="submit" className="w-full bg-indigo-600 hover:bg-indigo-700 text-white">
-                Authenticate
-              </Button>
-            </form>
+            <Input
+              secureTextEntry
+              value={password}
+              onChangeText={setPassword}
+              placeholder="Enter Passcode"
+              style={styles.input}
+            />
+            <Button onPress={handlePasswordSubmit} style={styles.authButton}>
+              Authenticate
+            </Button>
           </CardContent>
         </Card>
-      </div>
+      </View>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-100 dark:bg-gray-900 p-4 md:p-8">
-      <Toaster position="bottom-right" />
-      <div className="max-w-7xl mx-auto">
-        <header className="mb-8 flex flex-col md:flex-row md:items-center md:justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Event Management</h1>
-            <p className="text-gray-600 dark:text-gray-300 mt-2">Create and manage Hooked events</p>
-          </div>
-          <Button onClick={() => openModal('form')} className="bg-indigo-600 hover:bg-indigo-700 text-white">
-            <PlusCircle className="h-4 w-4 mr-2" /> Create Event
+    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+      <Toaster position="bottom" />
+      <View style={styles.headerRow}>
+        <View>
+          <Text style={styles.title}>Event Management</Text>
+          <Text style={styles.subtitle}>Create and manage Hooked events</Text>
+        </View>
+        <Button onPress={() => openModal('form')} style={styles.createButton}>
+          <PlusCircle size={16} color="#fff" style={styles.icon} />
+          <Text style={styles.buttonText}>Create Event</Text>
+        </Button>
+      </View>
+
+      {isLoading ? (
+        <ActivityIndicator style={styles.loading} size="large" color="#6366f1" />
+      ) : events.length === 0 ? (
+        <View style={styles.emptyState}>
+          <Text style={styles.emptyText}>No events yet</Text>
+          <Button onPress={() => openModal('form')} style={styles.createButton}>
+            <PlusCircle size={16} color="#fff" style={styles.icon} />
+            <Text style={styles.buttonText}>Create Your First Event</Text>
           </Button>
-        </header>
+        </View>
+      ) : (
+        events.map(event => {
+          const now = new Date();
+          const isActive =
+            !!event.starts_at &&
+            !!event.expires_at &&
+            new Date(event.starts_at) <= now &&
+            now <= new Date(event.expires_at);
+          return (
+            <Card key={event.id} style={styles.eventCard}>
+              <CardHeader style={styles.eventHeader}>
+                <View style={styles.headerContent}>
+                  <View style={{ flex: 1 }}>
+                    <CardTitle>
+                      <Text style={styles.eventName}>{event.name}</Text>
+                    </CardTitle>
+                    <View style={styles.codeRow}>
+                      <View style={styles.codeItem}>
+                        <Hash size={14} color="#fff" />
+                        <Text style={styles.codeText}>{event.code?.toUpperCase() || 'No Code'}</Text>
+                      </View>
+                      {event.location ? (
+                        <View style={styles.codeItem}>
+                          <MapPin size={14} color="#fff" />
+                          <Text style={styles.codeText}>{event.location}</Text>
+                        </View>
+                      ) : null}
+                    </View>
+                  </View>
+                  <Badge style={isActive ? styles.activeBadge : styles.inactiveBadge}>
+                    {isActive ? 'Active' : 'Inactive'}
+                  </Badge>
+                </View>
+              </CardHeader>
+              <CardContent>
+                <View style={styles.section}>
+                  <Text style={styles.sectionTitle}>Schedule</Text>
+                  <Text style={styles.sectionText}>
+                    Starts: {event.starts_at ? new Date(event.starts_at).toLocaleString() : 'Not set'}
+                  </Text>
+                  <Text style={styles.sectionText}>
+                    Expires: {event.expires_at ? new Date(event.expires_at).toLocaleString() : 'Not set'}
+                  </Text>
+                </View>
+                <View style={styles.section}>
+                  <Text style={styles.sectionTitle}>Join Link</Text>
+                  <View style={styles.linkRow}>
+                    <Input
+                      value={`${APP_ORIGIN}${createPageUrl(`join?code=${event.code?.toUpperCase() || ''}`)}`}
+                      editable={false}
+                      style={styles.linkInput}
+                    />
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onPress={() => {
+                        Clipboard.setStringAsync(
+                          `${APP_ORIGIN}${createPageUrl(`join?code=${event.code?.toUpperCase() || ''}`)}`
+                        );
+                        toast({ type: 'success', text1: 'Join link copied to clipboard!' });
+                      }}
+                    >
+                      <Copy size={16} />
+                    </Button>
+                  </View>
+                </View>
+                <View style={styles.section}>
+                  <Text style={styles.sectionTitle}>QR Code</Text>
+                  <QRCodeGenerator
+                    url={`${APP_ORIGIN}${createPageUrl(`join?code=${event.code?.toUpperCase() || ''}`)}`}
+                    fileName={`${event.name}_QR.png`}
+                  />
+                </View>
+              </CardContent>
+              <CardFooter style={styles.footer}>
+                <Button variant="outline" onPress={() => openModal('analytics', event)} style={styles.actionButton}>
+                  <BarChart2 size={14} style={styles.icon} />
+                  <Text style={styles.actionText}>Analytics</Text>
+                </Button>
+                <Button variant="outline" onPress={() => openModal('feedbacks', event)} style={styles.actionButton}>
+                  <MessageSquare size={14} style={styles.icon} />
+                  <Text style={styles.actionText}>Feedbacks</Text>
+                </Button>
+                <Button variant="outline" onPress={() => openModal('form', event)} style={styles.actionButton}>
+                  <Edit size={14} style={styles.icon} />
+                  <Text style={styles.actionText}>Edit</Text>
+                </Button>
+                <Button onPress={() => handleDownload(event)} disabled={downloadingEventId === event.id} style={styles.actionButton}>
+                  {downloadingEventId === event.id ? (
+                    <Loader2 size={14} style={styles.icon} />
+                  ) : (
+                    <Download size={14} style={styles.icon} />
+                  )}
+                  <Text style={styles.actionText}>Download</Text>
+                </Button>
+                <Button
+                  variant="outline"
+                  onPress={() => toast({ type: 'info', text1: 'Coming soon!' })}
+                  style={styles.actionButton}
+                >
+                  <FileImage size={14} style={styles.icon} />
+                  <Text style={styles.actionText}>QR Sign</Text>
+                </Button>
+                <Button variant="destructive" onPress={() => openModal('delete', event)} style={styles.actionButton}>
+                  <Trash2 size={14} style={styles.icon} />
+                  <Text style={styles.actionText}>Delete</Text>
+                </Button>
+              </CardFooter>
+            </Card>
+          );
+        })
+      )}
 
-        {isLoading ? (
-          <div className="flex justify-center items-center h-64">
-            <Loader2 className="h-8 w-8 animate-spin text-purple-600" />
-          </div>
-        ) : events.length === 0 ? (
-          <div className="text-center py-12">
-            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">No events yet</h3>
-            <p className="text-gray-500 dark:text-gray-400 mb-4">Get started by creating your first event.</p>
-            <Button onClick={() => openModal('form')} className="bg-indigo-600 hover:bg-indigo-700 text-white">
-              <PlusCircle className="h-4 w-4 mr-2" /> Create Your First Event
-            </Button>
-          </div>
-        ) : (
-          <div className="space-y-6">
-            {events.map((event) => {
-              const now = new Date();
-              const isActive = event.starts_at && event.expires_at &&
-                new Date(event.starts_at) <= now && now <= new Date(event.expires_at);
-
-              return (
-                <Card key={event.id} className="shadow-lg overflow-hidden bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
-                  <CardHeader className="bg-gradient-to-r from-blue-500 to-purple-600 text-white p-6">
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <CardTitle className="text-2xl font-bold mb-2">{event.name}</CardTitle>
-                        <div className="flex items-center gap-4 text-blue-100">
-                          <span className="flex items-center gap-1">
-                            <Hash className="h-4 w-4" />
-                            {event.code?.toUpperCase() || 'No Code'}
-                          </span>
-                          {event.location && (
-                            <span className="flex items-center gap-1">
-                              <MapPin className="h-4 w-4" />
-                              {event.location}
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                      <Badge variant={isActive ? "default" : "secondary"} className={isActive ? "bg-green-500 text-white" : "bg-gray-500 text-white"}>
-                        {isActive ? "Active" : "Inactive"}
-                      </Badge>
-                    </div>
-                  </CardHeader>
-                  <CardContent className="p-6">
-                    {/* Schedule Section */}
-                    <div className="mb-6">
-                      <h4 className="font-semibold text-gray-900 dark:text-white mb-2">Schedule</h4>
-                      <p className="text-sm text-gray-500 dark:text-gray-400">
-                        Starts: {event.starts_at ? new Date(event.starts_at).toLocaleString() : 'Not set'}
-                      </p>
-                      <p className="text-sm text-gray-500 dark:text-gray-400">
-                        Expires: {new Date(event.expires_at).toLocaleString()}
-                      </p>
-                    </div>
-
-                    {/* Join Link Section */}
-                    <div className="mb-6">
-                      <h4 className="font-semibold text-gray-900 dark:text-white mb-2">Join Link</h4>
-                      <div className="flex items-center gap-2">
-                        <Input
-                          value={`${APP_ORIGIN}${createPageUrl(`join?code=${event.code?.toUpperCase() || ''}`)}`}
-                          readOnly
-                          className="bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white border-gray-300 dark:border-gray-600"
-                        />
-                        <Button
-                          onClick={() => {
-                            Clipboard.setStringAsync(`${APP_ORIGIN}${createPageUrl(`join?code=${event.code?.toUpperCase() || ''}`)}`);
-                              toast({ type: 'success', text1: 'Join link copied to clipboard!' });
-                          }}
-                          variant="outline"
-                          size="icon"
-                          className="border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600"
-                        >
-                          <Copy className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </div>
-
-                    {/* QR Code Section */}
-                    <div>
-                      <h4 className="font-semibold text-gray-900 dark:text-white mb-2">QR Code</h4>
-                      <QRCodeGenerator
-                        url={`${APP_ORIGIN}${createPageUrl(`join?code=${event.code?.toUpperCase() || ''}`)}`}
-                        fileName={`${event.name}_QR.png`}
-                      />
-                    </div>
-                  </CardContent>
-                  <CardFooter className="bg-gray-50 dark:bg-gray-700 p-4 flex flex-wrap gap-2 justify-end border-t border-gray-200 dark:border-gray-600">
-                      <Button variant="outline" onClick={() => openModal('analytics', event)} className="border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600"><BarChart2 className="h-4 w-4 mr-2" /> Analytics</Button>
-                      <Button variant="outline" onClick={() => openModal('feedbacks', event)} className="border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600"><MessageSquare className="h-4 w-4 mr-2" /> Feedbacks</Button>
-                      <Button variant="outline" onClick={() => openModal('form', event)} className="border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600"><Edit className="h-4 w-4 mr-2" /> Edit</Button>
-                      <Button onClick={() => handleDownload(event)} disabled={downloadingEventId === event.id} className="bg-blue-600 hover:bg-blue-700 text-white">
-                        {downloadingEventId === event.id ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Download className="h-4 w-4 mr-2" />}
-                        Download Data
-                      </Button>
-                      <Button
-                        variant="outline"
-                          onClick={() => toast({ type: 'info', text1: 'Coming soon!' })}
-                        className="border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600"
-                      >
-                        <FileImage className="h-4 w-4 mr-2" />
-                        Download QR Sign
-                      </Button>
-                      <Button variant="destructive" onClick={() => openModal('delete', event)} className="bg-red-600 hover:bg-red-700 text-white"><Trash2 className="h-4 w-4 mr-2" /> Delete</Button>
-                  </CardFooter>
-                </Card>
-              );
-            })}
-          </div>
-        )}
-
-        {/* Modals */}
-        {modals.form && (
-          <EventFormModal event={selectedEvent} isOpen={true} onClose={closeModal} onSuccess={() => { closeModal(); loadEvents(); }} />
-        )}
-        {modals.analytics && selectedEvent && (
-          <EventAnalyticsModal event={selectedEvent} isOpen={true} onClose={closeModal} />
-        )}
-        {modals.feedbacks && selectedEvent && (
-          <FeedbackInsightsModal event={selectedEvent} isOpen={true} onClose={closeModal} />
-        )}
-        {modals.delete && selectedEvent && (
-          <DeleteConfirmationDialog isOpen={true} onClose={closeModal} onConfirm={handleDeleteEvent} eventName={selectedEvent.name} />
-        )}
-      </div>
-    </div>
+      {modals.form && (
+        <EventFormModal
+          event={selectedEvent}
+          isOpen
+          onClose={closeModal}
+          onSuccess={() => {
+            closeModal();
+            loadEvents();
+          }}
+        />
+      )}
+      {modals.analytics && selectedEvent && (
+        <EventAnalyticsModal event={selectedEvent} isOpen onClose={closeModal} />
+      )}
+      {modals.feedbacks && selectedEvent && (
+        <FeedbackInsightsModal event={selectedEvent} isOpen onClose={closeModal} />
+      )}
+      {modals.delete && selectedEvent && (
+        <DeleteConfirmationDialog
+          isOpen
+          onClose={closeModal}
+          onConfirm={handleDeleteEvent}
+          eventName={selectedEvent.name}
+        />
+      )}
+    </ScrollView>
   );
 };
+
+const styles = StyleSheet.create({
+  container: { flex: 1, backgroundColor: '#f3f4f6' },
+  content: { padding: 16 },
+  headerRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 },
+  title: { fontSize: 24, fontWeight: 'bold', color: '#111827' },
+  subtitle: { color: '#6b7280', marginTop: 4 },
+  createButton: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#4f46e5', paddingHorizontal: 12, paddingVertical: 8, borderRadius: 4 },
+  buttonText: { color: '#fff' },
+  loading: { marginTop: 32 },
+  emptyState: { alignItems: 'center', marginTop: 32 },
+  emptyText: { marginBottom: 12, fontSize: 16, color: '#111827' },
+  eventCard: { marginBottom: 16 },
+  eventHeader: { backgroundColor: '#3b82f6', padding: 12 },
+  headerContent: { flexDirection: 'row', alignItems: 'flex-start' },
+  eventName: { fontSize: 18, fontWeight: 'bold', color: '#fff', marginBottom: 4 },
+  codeRow: { flexDirection: 'row', gap: 8 },
+  codeItem: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  codeText: { color: '#e0e7ff', fontSize: 12 },
+  activeBadge: { backgroundColor: '#10b981', color: '#fff', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4 },
+  inactiveBadge: { backgroundColor: '#6b7280', color: '#fff', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4 },
+  section: { marginBottom: 12 },
+  sectionTitle: { fontWeight: '600', marginBottom: 4, color: '#111827' },
+  sectionText: { fontSize: 12, color: '#6b7280' },
+  linkRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  linkInput: { flex: 1 },
+  footer: { flexWrap: 'wrap', flexDirection: 'row', justifyContent: 'flex-end', gap: 8 },
+  actionButton: { flexDirection: 'row', alignItems: 'center' },
+  actionText: { marginLeft: 4, color: '#111827' },
+  icon: { marginRight: 2 },
+  center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+  authContainer: { backgroundColor: '#f3f4f6', padding: 16, flex: 1 },
+  authCard: { width: '100%', maxWidth: 400 },
+  authTitle: { fontSize: 20, fontWeight: 'bold', textAlign: 'center' },
+  input: { marginBottom: 12 },
+  authButton: { paddingVertical: 12 },
+});
 
 export default AdminDashboard;

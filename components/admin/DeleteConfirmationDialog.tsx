@@ -1,4 +1,5 @@
 import React from 'react';
+import { Text, StyleSheet } from 'react-native';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -20,36 +21,32 @@ export interface DeleteConfirmationDialogProps {
 const DeleteConfirmationDialog: React.FC<DeleteConfirmationDialogProps> = ({ isOpen, onClose, onConfirm, eventName }) => {
   return (
     <AlertDialog open={isOpen} onOpenChange={onClose}>
-      <AlertDialogContent className="bg-white dark:bg-gray-900 text-gray-800 dark:text-white rounded-xl shadow-xl p-6 max-w-md w-full border border-gray-200 dark:border-gray-700">
-        <AlertDialogHeader className="mb-4">
-          <AlertDialogTitle className="text-xl font-bold mb-4">
-            Are you absolutely sure?
-          </AlertDialogTitle>
-          <AlertDialogDescription className="text-gray-600 dark:text-gray-300 mb-6">
-            This action cannot be undone. This will permanently delete the event <strong>&quot;{eventName}&quot;</strong> and all associated data including profiles, likes, and messages.
+      <AlertDialogContent style={styles.content}>
+        <AlertDialogHeader style={styles.header}>
+          <AlertDialogTitle style={styles.title}>Are you absolutely sure?</AlertDialogTitle>
+          <AlertDialogDescription style={styles.description}>
+            This action cannot be undone. This will permanently delete the event <Text style={{ fontWeight: 'bold' }}>&quot;{eventName}&quot;</Text> and all associated data including profiles, likes, and messages.
           </AlertDialogDescription>
         </AlertDialogHeader>
-        <AlertDialogFooter className="flex justify-end gap-3">
-          <AlertDialogCancel asChild>
-            <button
-              className="px-4 py-2 rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-              onClick={onClose}
-            >
-              Cancel
-            </button>
+        <AlertDialogFooter style={styles.footer}>
+          <AlertDialogCancel onPress={onClose}>
+            <Text>Cancel</Text>
           </AlertDialogCancel>
-          <AlertDialogAction asChild>
-            <button
-              className="px-4 py-2 rounded-md bg-red-600 text-white font-semibold hover:bg-red-700 transition-colors"
-              onClick={onConfirm}
-            >
-              Delete Event
-            </button>
+          <AlertDialogAction onPress={onConfirm}>
+            <Text>Delete Event</Text>
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
   );
 };
+
+const styles = StyleSheet.create({
+  content: { backgroundColor: '#fff', padding: 24, borderRadius: 12 },
+  header: { marginBottom: 16 },
+  title: { fontSize: 18, fontWeight: 'bold', marginBottom: 16 },
+  description: { marginBottom: 24 },
+  footer: { flexDirection: 'row', justifyContent: 'flex-end', gap: 8 },
+});
 
 export default DeleteConfirmationDialog;

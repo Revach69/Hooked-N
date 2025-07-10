@@ -1,5 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import {
   Dialog,
   DialogContent,
@@ -11,8 +12,8 @@ import { Input } from '../ui/input';
 import { Textarea } from '../ui/textarea';
 import { Label } from '../ui/label';
 import { Event } from '../../api/entities';
-import { X, Save, Loader2 } from 'lucide-react';
-import { toast } from "../ui/sonner";
+import { X, Save, Loader2 } from 'lucide-react-native';
+import toast from '../../lib/toast';
 import { format } from 'date-fns';
 
 interface EventData {
@@ -144,109 +145,97 @@ const EventFormModal: React.FC<EventFormModalProps> = ({ event, isOpen, onClose,
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700">
-        <DialogHeader className="p-6 border-b border-gray-200 dark:border-gray-700">
-            <div className="flex items-center justify-between">
-              <DialogTitle className="text-xl font-bold text-gray-900 dark:text-white">
-                {event ? 'Edit Event' : 'Create New Event'}
-              </DialogTitle>
-              <Button variant="ghost" size="icon" onClick={onClose} className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300">
-                <X className="w-4 h-4" />
-              </Button>
-            </div>
-          </DialogHeader>
+      <DialogContent style={styles.content}>
+        <DialogHeader style={styles.header}>
+          <View style={styles.headerRow}>
+            <DialogTitle style={styles.title}>{event ? 'Edit Event' : 'Create New Event'}</DialogTitle>
+            <Button variant="ghost" size="icon" onPress={onClose}>
+              <X size={16} />
+            </Button>
+          </View>
+        </DialogHeader>
 
-          <form onSubmit={handleSubmit} className="p-6 space-y-6">
-            <div>
-              <Label htmlFor="name" className="text-gray-700 dark:text-gray-200">Event Name</Label>
-              <Input 
-                id="name" 
-                value={formData.name} 
-                onChange={(e) => handleInputChange('name', e.target.value)} 
-                required 
-                className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-400 border-gray-300 dark:border-gray-600"
-              />
-            </div>
+        <ScrollView style={styles.form}>
+          <View style={styles.field}>
+            <Label>Event Name</Label>
+            <Input
+              value={formData.name}
+              onChangeText={(t) => handleInputChange('name', t)}
+            />
+          </View>
             
-            <div>
-              <Label htmlFor="code" className="text-gray-700 dark:text-gray-200">Access Code *</Label>
-              <Input 
-                id="code" 
-                value={formData.code} 
-                onChange={(e) => handleInputChange('code', e.target.value)} 
-                required 
-                placeholder="e.g., PARTY2024"
-                className={`bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-400 border-gray-300 dark:border-gray-600 ${formErrors.code ? 'border-red-500' : ''}`}
-              />
-              {formErrors.code && <p className="text-red-500 dark:text-red-400 text-xs mt-1">{formErrors.code}</p>}
-            </div>
+          <View style={styles.field}>
+            <Label>Access Code *</Label>
+            <Input
+              value={formData.code}
+              onChangeText={(t) => handleInputChange('code', t)}
+              placeholder="e.g., PARTY2024"
+              style={formErrors.code ? styles.errorInput : undefined}
+            />
+            {formErrors.code ? <Text style={styles.error}>{formErrors.code}</Text> : null}
+          </View>
 
-            <div>
-              <Label htmlFor="starts_at" className="text-gray-700 dark:text-gray-200">Starts At</Label>
-              <Input 
-                id="starts_at" 
-                type="datetime-local" 
-                value={formData.starts_at} 
-                onChange={(e) => handleInputChange('starts_at', e.target.value)} 
-                className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-400 border-gray-300 dark:border-gray-600"
-              />
-              {formErrors.starts_at && <p className="text-red-500 dark:text-red-400 text-xs mt-1">{formErrors.starts_at}</p>}
-            </div>
+          <View style={styles.field}>
+            <Label>Starts At</Label>
+            <Input
+              value={formData.starts_at}
+              onChangeText={(t) => handleInputChange('starts_at', t)}
+              placeholder="YYYY-MM-DD HH:mm"
+            />
+            {formErrors.starts_at ? <Text style={styles.error}>{formErrors.starts_at}</Text> : null}
+          </View>
 
-            <div>
-              <Label htmlFor="expires_at" className="text-gray-700 dark:text-gray-200">Expires At</Label>
-              <Input 
-                id="expires_at" 
-                type="datetime-local" 
-                value={formData.expires_at} 
-                onChange={(e) => handleInputChange('expires_at', e.target.value)} 
-                className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-400 border-gray-300 dark:border-gray-600"
-              />
-              {formErrors.expires_at && <p className="text-red-500 dark:text-red-400 text-xs mt-1">{formErrors.expires_at}</p>}
-            </div>
+          <View style={styles.field}>
+            <Label>Expires At</Label>
+            <Input
+              value={formData.expires_at}
+              onChangeText={(t) => handleInputChange('expires_at', t)}
+              placeholder="YYYY-MM-DD HH:mm"
+            />
+            {formErrors.expires_at ? <Text style={styles.error}>{formErrors.expires_at}</Text> : null}
+          </View>
             
-            <div>
-              <Label htmlFor="location" className="text-gray-700 dark:text-gray-200">Location</Label>
-              <Input 
-                id="location" 
-                value={formData.location} 
-                onChange={(e) => handleInputChange('location', e.target.value)} 
-                className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-400 border-gray-300 dark:border-gray-600"
-              />
-            </div>
+          <View style={styles.field}>
+            <Label>Location</Label>
+            <Input value={formData.location} onChangeText={(t) => handleInputChange('location', t)} />
+          </View>
 
-            <div>
-              <Label htmlFor="description" className="text-gray-700 dark:text-gray-200">Description</Label>
-              <Textarea 
-                id="description" 
-                value={formData.description} 
-                onChange={(e) => handleInputChange('description', e.target.value)} 
-                className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-400 border-gray-300 dark:border-gray-600"
-              />
-            </div>
+          <View style={styles.field}>
+            <Label>Description</Label>
+            <Textarea value={formData.description} onChangeText={(t) => handleInputChange('description', t)} />
+          </View>
 
-            <div>
-              <Label htmlFor="organizer_email" className="text-gray-700 dark:text-gray-200">Organizer Email</Label>
-              <Input 
-                id="organizer_email" 
-                type="email" 
-                value={formData.organizer_email} 
-                onChange={(e) => handleInputChange('organizer_email', e.target.value)} 
-                className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-400 border-gray-300 dark:border-gray-600"
-              />
-            </div>
+          <View style={styles.field}>
+            <Label>Organizer Email</Label>
+            <Input value={formData.organizer_email} onChangeText={(t) => handleInputChange('organizer_email', t)} />
+          </View>
 
-            <div className="flex gap-3 pt-4">
-              <Button type="button" variant="outline" onClick={onClose} className="flex-1 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800">Cancel</Button>
-              <Button type="submit" disabled={isSubmitting} className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white">
-                {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4 mr-2" />}
-                {event ? 'Save Changes' : 'Create Event'}
-              </Button>
-            </div>
-          </form>
+          <View style={styles.buttonRow}>
+            <Button variant="outline" onPress={onClose} style={styles.flex1}>
+              Cancel
+            </Button>
+            <Button onPress={handleSubmit} disabled={isSubmitting} style={styles.flex1}>
+              {isSubmitting ? <Loader2 size={16} /> : <Save size={16} style={{ marginRight: 4 }} />}
+              <Text>{event ? 'Save Changes' : 'Create Event'}</Text>
+            </Button>
+          </View>
+        </ScrollView>
       </DialogContent>
     </Dialog>
   );
 };
+
+const styles = StyleSheet.create({
+  content: { maxHeight: '90%', width: '100%' },
+  header: { padding: 16, borderBottomWidth: StyleSheet.hairlineWidth },
+  headerRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  title: { fontSize: 18, fontWeight: 'bold' },
+  form: { padding: 16 },
+  field: { marginBottom: 12 },
+  error: { color: '#dc2626', fontSize: 12, marginTop: 4 },
+  errorInput: { borderColor: '#dc2626' },
+  buttonRow: { flexDirection: 'row', gap: 8, paddingTop: 8 },
+  flex1: { flex: 1 },
+});
 
 export default EventFormModal;
