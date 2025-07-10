@@ -23,7 +23,7 @@ import { useNavigation } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as ImagePicker from 'expo-image-picker';
 import * as FileSystem from 'expo-file-system';
-
+import { isFileInfoSuccess } from '../lib/helpers';
 import { User, EventProfile, Event } from '../api/entities';
 import { UploadFile } from '../api/integrations';
 import { saveLocalProfile, getLocalProfile } from '../lib/localProfile';
@@ -174,10 +174,10 @@ export default function Consent() {
     // Validate file size (5MB limit)
     try {
       const info = await FileSystem.getInfoAsync(asset.uri);
-      if (info.size && info.size > 5 * 1024 * 1024) {
+        if (isFileInfoSuccess(info) && info.size > 5 * 1024 * 1024) {
         setError('Image must be smaller than 5MB.');
-        return;
-      }
+      return;
+}
     } catch (e) {
       console.warn('Could not get file info', e);
     }

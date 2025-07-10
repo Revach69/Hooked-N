@@ -10,50 +10,56 @@ import {
   deleteDoc,
   query,
   where,
-  DocumentData
+  DocumentData,
+  QueryConstraint
 } from 'firebase/firestore';
 
-// --- Generic Firestore collection helpers ---
+// --- Generic Collection Methods ---
+function getCollection(name: string) {
+  return collection(db, name);
+}
+
+function getDocRef(name: string, id: string) {
+  return doc(db, name, id);
+}
+
+function buildConstraints(filters: Record<string, any>): QueryConstraint[] {
+  return Object.entries(filters).map(([key, value]) => where(key, '==', value));
+}
 
 const collectionMethods = (collectionName: string) => ({
   list: async (): Promise<DocumentData[]> => {
-    const snapshot = await getDocs(collection(db, collectionName));
-    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    const snapshot = await getDocs(getCollection(collectionName));
+    return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
   },
 
   get: async (id: string): Promise<DocumentData | null> => {
-    const docRef = doc(db, collectionName, id);
-    const docSnap = await getDoc(docRef);
-    return docSnap.exists() ? { id: docSnap.id, ...docSnap.data() } : null;
+    const snapshot = await getDoc(getDocRef(collectionName, id));
+    return snapshot.exists() ? { id: snapshot.id, ...snapshot.data() } : null;
   },
 
-  create: async (data: DocumentData) => {
-    const docRef = await addDoc(collection(db, collectionName), data);
+  create: async (data: DocumentData): Promise<{ id: string; [key: string]: any }> => {
+    const docRef = await addDoc(getCollection(collectionName), data);
     return { id: docRef.id, ...data };
   },
 
-  update: async (id: string, data: Partial<DocumentData>) => {
-    const docRef = doc(db, collectionName, id);
-    await updateDoc(docRef, data);
-    return true;
+  update: async (id: string, data: Partial<DocumentData>): Promise<void> => {
+    await updateDoc(getDocRef(collectionName, id), data);
   },
 
-  delete: async (id: string) => {
-    await deleteDoc(doc(db, collectionName, id));
-    return true;
+  delete: async (id: string): Promise<void> => {
+    await deleteDoc(getDocRef(collectionName, id));
   },
 
-  filter: async (filters: Record<string, any>) => {
-    const constraints = Object.entries(filters).map(
-      ([field, value]) => where(field, '==', value)
-    );
-    const q = query(collection(db, collectionName), ...constraints);
+  filter: async (filters: Record<string, any>): Promise<DocumentData[]> => {
+    const constraints = buildConstraints(filters);
+    const q = query(getCollection(collectionName), ...constraints);
     const snapshot = await getDocs(q);
-    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
   }
 });
 
-// --- Custom Helpers for current user ---
+// --- Custom Helpers for User Session Handling ---
 
 const getDocByField = async (
   collectionName: string,
@@ -77,7 +83,7 @@ const updateDocById = async (
   return true;
 };
 
-// --- Entity Definitions ---
+// --- Exported Entity Methods ---
 
 export const Event = collectionMethods('events');
 export const EventProfile = collectionMethods('event_profiles');
@@ -86,12 +92,10 @@ export const Message = collectionMethods('messages');
 export const ContactShare = collectionMethods('contact_shares');
 export const EventFeedback = collectionMethods('event_feedback');
 
-// --- Custom User Methods (replaces Base44 SDK) ---
-
 export const User = {
   ...collectionMethods('users'),
 
-  me: async () => {
+  me: async (): Promise<{ id: string; [key: string]: any } | null> => {
     const sessionId = await AsyncStorage.getItem("currentSessionId");
     if (!sessionId) return null;
     return await getDocByField("users", "session_id", sessionId);

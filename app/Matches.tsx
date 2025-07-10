@@ -14,6 +14,17 @@ import { EventProfile, Like, Message } from "../api/entities";
 import ChatModal from "../components/ChatModal";
 import ProfileDetailModal from "../components/ProfileDetailModal";
 
+type MatchProfile = {
+  session_id: string;
+  first_name?: string;
+  age?: number;
+  interests?: string[];
+  profile_photo_url?: string;
+  profile_color?: string;
+  unreadCount?: number;
+  [key: string]: any;
+};
+
 export default function Matches() {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const [matches, setMatches] = useState<any[]>([]);
@@ -36,7 +47,7 @@ export default function Matches() {
     loadIds();
   }, [loadIds]);
 
-  const markMatchesAsNotified = useCallback(async (mutualMatchProfiles) => {
+  const markMatchesAsNotified = useCallback(async (mutualMatchProfiles: MatchProfile[]) => {
     if (!currentSessionId || !eventId || mutualMatchProfiles.length === 0) return;
 
     const allMutualLikesForEvent = await Like.filter({ event_id: eventId, is_mutual: true });
@@ -99,7 +110,8 @@ export default function Matches() {
       const profiles = await EventProfile.filter({
         session_id: Array.from(matchedSessionIds),
         event_id: eventId
-      });
+      }) as MatchProfile[];
+      
       
       // Fetch unread message counts for each match
       const profilesWithUnreadCounts = await Promise.all(
@@ -154,6 +166,7 @@ export default function Matches() {
   const checkInitialUrl = useCallback(async () => {
     const initialUrl = await Linking.getInitialURL();
     if (!initialUrl) return;
+  
     try {
       const url = new URL(initialUrl);
       const openChatSessionId = url.searchParams.get('openChat');
@@ -162,14 +175,10 @@ export default function Matches() {
         if (matchToOpen) {
           setSelectedMatch(matchToOpen);
         }
-        } catch (_) {
-          // ignore invalid URL
-        }
+      }
     } catch (error) {
       console.error("Error processing initial URL:", error);
     }
-    checkInitialUrl();
-
   }, [matches]);
 
   // Check for deep link parameter to auto-open specific chat

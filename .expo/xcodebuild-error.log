@@ -2,6 +2,7 @@
 
 
 The following build commands failed:
-	PhaseScriptExecution [CP-User]\ Generate\ Specs /Users/roirevach/Library/Developer/Xcode/DerivedData/Hooked-dsnonfwrbyhquleyjoccjarpxpfd/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/ReactCodegen.build/Script-46EB2E00027E40.sh (in target 'ReactCodegen' from project 'Pods')
+	ScanDependencies /Users/roirevach/Library/Developer/Xcode/DerivedData/Hooked-dsnonfwrbyhquleyjoccjarpxpfd/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/React-RuntimeApple.build/Objects-normal/x86_64/React-RuntimeApple-dummy.o /Users/roirevach/Desktop/Hooked\ N/ios/Pods/Target\ Support\ Files/React-RuntimeApple/React-RuntimeApple-dummy.m normal x86_64 objective-c com.apple.compilers.llvm.clang.1_0.compiler (in target 'React-RuntimeApple' from project 'Pods')
+	ScanDependencies /Users/roirevach/Library/Developer/Xcode/DerivedData/Hooked-dsnonfwrbyhquleyjoccjarpxpfd/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/React-RCTRuntime.build/Objects-normal/x86_64/React-RCTRuntime-dummy.o /Users/roirevach/Desktop/Hooked\ N/ios/Pods/Target\ Support\ Files/React-RCTRuntime/React-RCTRuntime-dummy.m normal x86_64 objective-c com.apple.compilers.llvm.clang.1_0.compiler (in target 'React-RCTRuntime' from project 'Pods')
 	Building workspace Hooked with scheme Hooked and configuration Debug
-(2 failures)
+(3 failures)
