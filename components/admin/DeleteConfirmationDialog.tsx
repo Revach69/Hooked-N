@@ -1,5 +1,5 @@
 import React from 'react';
-import { Text } from 'react-native';
+import { Text, StyleSheet } from 'react-native';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -21,16 +21,14 @@ export interface DeleteConfirmationDialogProps {
 const DeleteConfirmationDialog: React.FC<DeleteConfirmationDialogProps> = ({ isOpen, onClose, onConfirm, eventName }) => {
   return (
     <AlertDialog open={isOpen} onOpenChange={onClose}>
-      <AlertDialogContent className="bg-white dark:bg-gray-900 text-gray-800 dark:text-white rounded-xl shadow-xl p-6 max-w-md w-full border border-gray-200 dark:border-gray-700">
-        <AlertDialogHeader className="mb-4">
-          <AlertDialogTitle className="text-xl font-bold mb-4">
-            Are you absolutely sure?
-          </AlertDialogTitle>
-          <AlertDialogDescription className="text-gray-600 dark:text-gray-300 mb-6">
-            This action cannot be undone. This will permanently delete the event <strong>&quot;{eventName}&quot;</strong> and all associated data including profiles, likes, and messages.
+      <AlertDialogContent style={styles.content}>
+        <AlertDialogHeader style={styles.header}>
+          <AlertDialogTitle style={styles.title}>Are you absolutely sure?</AlertDialogTitle>
+          <AlertDialogDescription style={styles.description}>
+            This action cannot be undone. This will permanently delete the event <Text style={{ fontWeight: 'bold' }}>&quot;{eventName}&quot;</Text> and all associated data including profiles, likes, and messages.
           </AlertDialogDescription>
         </AlertDialogHeader>
-        <AlertDialogFooter style={{ flexDirection: 'row', justifyContent: 'flex-end', gap: 8 }}>
+        <AlertDialogFooter style={styles.footer}>
           <AlertDialogCancel onPress={onClose}>
             <Text>Cancel</Text>
           </AlertDialogCancel>
@@ -42,5 +40,13 @@ const DeleteConfirmationDialog: React.FC<DeleteConfirmationDialogProps> = ({ isO
     </AlertDialog>
   );
 };
+
+const styles = StyleSheet.create({
+  content: { backgroundColor: '#fff', padding: 24, borderRadius: 12 },
+  header: { marginBottom: 16 },
+  title: { fontSize: 18, fontWeight: 'bold', marginBottom: 16 },
+  description: { marginBottom: 24 },
+  footer: { flexDirection: 'row', justifyContent: 'flex-end', gap: 8 },
+});
 
 export default DeleteConfirmationDialog;

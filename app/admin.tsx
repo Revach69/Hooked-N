@@ -200,7 +200,15 @@ const AdminDashboard: React.FC = () => {
     setIsLoading(true);
     try {
       const eventList = await Event.list('-created_date');
-      setEvents(eventList);
+      const mappedList: EventEntity[] = eventList.map((e: any) => ({
+        id: e.id,
+        name: e.name ?? '',
+        code: e.code,
+        location: e.location,
+        starts_at: e.starts_at,
+        expires_at: e.expires_at,
+      }));
+      setEvents(mappedList);
     } catch (error) {
       console.error('Error fetching events:', error);
       toast({ type: 'error', text1: 'Failed to load events.' });
@@ -239,7 +247,7 @@ const AdminDashboard: React.FC = () => {
   const handleDeleteEvent = async () => {
     if (!selectedEvent) return;
     try {
-      await Event.delete(selectedEvent.id);
+      await Event.delete(String(selectedEvent.id));
       toast({ type: 'success', text1: `Event "${selectedEvent.name}" deleted successfully.` });
       closeModal();
       loadEvents();
@@ -350,7 +358,7 @@ const AdminDashboard: React.FC = () => {
                     Starts: {event.starts_at ? new Date(event.starts_at).toLocaleString() : 'Not set'}
                   </Text>
                   <Text style={styles.sectionText}>
-                    Expires: {new Date(event.expires_at).toLocaleString()}
+                    Expires: {event.expires_at ? new Date(event.expires_at).toLocaleString() : 'Not set'}
                   </Text>
                 </View>
                 <View style={styles.section}>
