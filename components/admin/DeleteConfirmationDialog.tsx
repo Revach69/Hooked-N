@@ -1,4 +1,5 @@
 import React from 'react';
+import { Text } from 'react-native';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -29,22 +30,12 @@ const DeleteConfirmationDialog: React.FC<DeleteConfirmationDialogProps> = ({ isO
             This action cannot be undone. This will permanently delete the event <strong>&quot;{eventName}&quot;</strong> and all associated data including profiles, likes, and messages.
           </AlertDialogDescription>
         </AlertDialogHeader>
-        <AlertDialogFooter className="flex justify-end gap-3">
-          <AlertDialogCancel asChild>
-            <button
-              className="px-4 py-2 rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-              onClick={onClose}
-            >
-              Cancel
-            </button>
+        <AlertDialogFooter style={{ flexDirection: 'row', justifyContent: 'flex-end', gap: 8 }}>
+          <AlertDialogCancel onPress={onClose}>
+            <Text>Cancel</Text>
           </AlertDialogCancel>
-          <AlertDialogAction asChild>
-            <button
-              className="px-4 py-2 rounded-md bg-red-600 text-white font-semibold hover:bg-red-700 transition-colors"
-              onClick={onConfirm}
-            >
-              Delete Event
-            </button>
+          <AlertDialogAction onPress={onConfirm}>
+            <Text>Delete Event</Text>
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
