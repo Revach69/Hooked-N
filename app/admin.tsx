@@ -199,7 +199,7 @@ const AdminDashboard: React.FC = () => {
   const loadEvents = useCallback(async () => {
     setIsLoading(true);
     try {
-      const eventList = await Event.list('-created_date');
+      const eventList = await Event.list();
       const mappedList: EventEntity[] = eventList.map((e: any) => ({
         id: e.id,
         name: e.name ?? '',
