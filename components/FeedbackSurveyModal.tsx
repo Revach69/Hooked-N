@@ -31,14 +31,7 @@ type FormData = {
   general_feedback: string;
 };
 
-interface FormErrors {
-  rating_profile_setup?: string;
-  rating_interests_helpful?: string;
-  rating_social_usefulness?: string;
-  met_match_in_person?: string;
-  open_to_other_event_types?: string;
-  match_experience_feedback?: string;
-}
+type FormErrors = Partial<Record<keyof FormData, string>>;
 
 export default function FeedbackSurveyModal({ event, sessionId, onClose }: Props) {
   const [formData, setFormData] = useState<FormData>({
