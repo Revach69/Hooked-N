@@ -1,4 +1,4 @@
 {
-  "expo.jsEngine": "jsc",
+  "expo.jsEngine": "Hermes",
   "EX_DEV_CLIENT_NETWORK_INSPECTOR": "true"
 }

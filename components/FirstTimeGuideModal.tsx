@@ -17,7 +17,7 @@ interface Props {
   onClose: () => void;
 }
 
-const GUIDE_IMAGE_URL = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/9f8621f07_HOOKED-tips.png';
+const GUIDE_IMAGE_URL = '../first_time_guide.png'; // Replace with actual image URL or import
 
 const slides = [
   {
