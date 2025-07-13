@@ -1,5 +1,5 @@
-require File.join(File.dirname(`node --print "require.resolve('expo/package.json')"`), "scripts/autolinking")
-require File.join(File.dirname(`node --print "require.resolve('react-native/package.json')"`), "scripts/react_native_pods")
+require File.join(File.dirname(node --print "require.resolve('expo/package.json')"), "scripts/autolinking")
+require File.join(File.dirname(node --print "require.resolve('react-native/package.json')"), "scripts/react_native_pods")
 
 require 'json'
 podfile_properties = JSON.parse(File.read(File.join(__dir__, 'Podfile.properties.json'))) rescue {}
@@ -58,6 +58,64 @@ target 'Hooked' do
       target_installation_result.resource_bundle_targets.each do |resource_bundle_target|
         resource_bundle_target.build_configurations.each do |config|
           config.build_settings['CODE_SIGNING_ALLOWED'] = 'NO'
+        end
+      end
+    end
+
+    # ✅ Fix conflicting module redefinition & missing map
+    installer.pods_project.targets.each do |target|
+      if target.name == 'React-RCTText'
+        target.build_configurations.each do |config|
+          config.build_settings['CLANG_ALLOW_NON_MODULAR_INCLUDES_IN_FRAMEWORK_MODULES'] = 'YES'
+        end
+      end
+
+      # This line removes the *React-jsitooling* module from all targets except 'React-Core'
+      if ['React-Core'].exclude?(target.name)
+        target.build_configurations.each do |config|
+          config.build_settings['OTHER_CFLAGS'] ||= ['$(inherited)']
+          config.build_settings['OTHER_CFLAGS'] << '-Wno-module-conflict'
+        end
+      end
+    end
+
+    # Rename instead of deleting to prevent crash while avoiding redefinition
+    begin
+      File.rename(
+        "Pods/Headers/Public/react_runtime/React-jsitooling.modulemap",
+        "Pods/Headers/Public/react_runtime/React-jsitooling.modulemap.bak"
+      )
+    rescue
+      puts "[Warning] React-jsitooling.modulemap not found, skipping rename"
+    end
+
+    # Revert the generation of ReactCommon.modulemap
+    react_common_modulemap_path = "Pods/Headers/Public/ReactCommon/ReactCommon.modulemap"
+    if File.exist?(react_common_modulemap_path)
+      File.delete(react_common_modulemap_path)
+      puts "[Info] ReactCommon.modulemap generation reverted."
+    end
+
+    # Fix React-jsitooling.modulemap missing issue
+    react_jsitooling_modulemap_path = "Pods/Headers/Public/react_runtime/React-jsitooling.modulemap"
+    unless File.exist?(react_jsitooling_modulemap_path)
+      File.write(react_jsitooling_modulemap_path, "module React-jsitooling {\n  header \"React-jsitooling.h\"\n  export *\n}")
+      puts "[Info] React-jsitooling.modulemap was missing and has been generated."
+    end
+
+    # Add additional flags to suppress module conflict warnings globally
+    installer.pods_project.targets.each do |target|
+      target.build_configurations.each do |config|
+        config.build_settings['OTHER_CFLAGS'] ||= ['$(inherited)']
+        config.build_settings['OTHER_CFLAGS'] << '-Wno-module-conflict'
+      end
+    end
+
+    # Ensure missing module maps are handled gracefully
+    installer.pods_project.targets.each do |target|
+      if target.name.include?('React')
+        target.build_configurations.each do |config|
+          config.build_settings['CLANG_ALLOW_NON_MODULAR_INCLUDES_IN_FRAMEWORK_MODULES'] = 'YES'
         end
       end
     end

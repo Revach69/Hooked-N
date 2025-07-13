@@ -2,7 +2,6 @@
 
 
 The following build commands failed:
-	ScanDependencies /Users/roirevach/Library/Developer/Xcode/DerivedData/Hooked-dsnonfwrbyhquleyjoccjarpxpfd/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/React-RCTText.build/Objects-normal/x86_64/React-RCTText-dummy.o /Users/roirevach/Desktop/Hooked\ N/ios/Pods/Target\ Support\ Files/React-RCTText/React-RCTText-dummy.m normal x86_64 objective-c com.apple.compilers.llvm.clang.1_0.compiler (in target 'React-RCTText' from project 'Pods')
-	ScanDependencies /Users/roirevach/Library/Developer/Xcode/DerivedData/Hooked-dsnonfwrbyhquleyjoccjarpxpfd/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/React-RCTText.build/Objects-normal/x86_64/NSTextStorage+FontScaling.o /Users/roirevach/Desktop/Hooked\ N/node_modules/react-native/Libraries/Text/Text/NSTextStorage+FontScaling.m normal x86_64 objective-c com.apple.compilers.llvm.clang.1_0.compiler (in target 'React-RCTText' from project 'Pods')
+	ScanDependencies /Users/roirevach/Library/Developer/Xcode/DerivedData/Hooked-dsnonfwrbyhquleyjoccjarpxpfd/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/React-jserrorhandler.build/Objects-normal/x86_64/React-jserrorhandler-dummy.o /Users/roirevach/Desktop/Hooked\ N/ios/Pods/Target\ Support\ Files/React-jserrorhandler/React-jserrorhandler-dummy.m normal x86_64 objective-c com.apple.compilers.llvm.clang.1_0.compiler (in target 'React-jserrorhandler' from project 'Pods')
 	Building workspace Hooked with scheme Hooked and configuration Debug
-(3 failures)
+(2 failures)
