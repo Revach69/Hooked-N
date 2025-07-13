@@ -6,7 +6,7 @@ import Home from './Home';
 import Consent from './Consent';
 import Discovery from './Discovery';
 import Matches from './Matches';
-import Join from './join';
+import Join from './Join';
 import Admin from './admin';
 import Profile from './Profile';
 import Layout from './Layout';
@@ -16,7 +16,7 @@ export type RootStackParamList = {
   Consent: undefined;
   Discovery: undefined;
   Matches: undefined;
-  join: undefined;
+  Join: undefined;
   admin: undefined;
   Profile: undefined;
 };
@@ -55,9 +55,9 @@ export default function AppNavigator() {
             </Layout>
           )}
         </Stack.Screen>
-        <Stack.Screen name="join">
+        <Stack.Screen name="Join">
           {() => (
-            <Layout currentPageName="join">
+            <Layout currentPageName="Join">
               <Join />
             </Layout>
           )}

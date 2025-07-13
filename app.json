@@ -12,7 +12,7 @@
       "android"
     ],
     "orientation": "portrait",
-    "jsEngine": "Hermes",
+    "jsEngine": "hermes",
     "ios": {
       "bundleIdentifier": "com.anonymous.hooked" 
     },

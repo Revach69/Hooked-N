@@ -41,6 +41,7 @@ import FeedbackInsightsModal from '../components/admin/FeedbackInsightsModal';
 import * as Clipboard from 'expo-clipboard';
 import * as FileSystem from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
+import { createPageUrl } from '../utils';
 
 const APP_ORIGIN = 'https://example.com';
 
@@ -177,9 +178,7 @@ const downloadEventData = async (event: EventEntity): Promise<void> => {
 
 const ADMIN_PASSCODE = "HOOKEDADMIN24";
 
-// Helper to construct relative page URLs, ensuring a leading slash
-const createPageUrl = (path: string): string =>
-  `/${path.startsWith('/') ? path.substring(1) : path}`;
+
 
 const AdminDashboard: React.FC = () => {
   const [password, setPassword] = useState('');
@@ -365,7 +364,7 @@ const AdminDashboard: React.FC = () => {
                   <Text style={styles.sectionTitle}>Join Link</Text>
                   <View style={styles.linkRow}>
                     <Input
-                      value={`${APP_ORIGIN}${createPageUrl(`join?code=${event.code?.toUpperCase() || ''}`)}`}
+                      value={`${APP_ORIGIN}${createPageUrl(`Join?code=${event.code?.toUpperCase() || ''}`)}`}
                       editable={false}
                       style={styles.linkInput}
                     />
@@ -374,7 +373,7 @@ const AdminDashboard: React.FC = () => {
                       size="icon"
                       onPress={() => {
                         Clipboard.setStringAsync(
-                          `${APP_ORIGIN}${createPageUrl(`join?code=${event.code?.toUpperCase() || ''}`)}`
+                          `${APP_ORIGIN}${createPageUrl(`Join?code=${event.code?.toUpperCase() || ''}`)}`
                         );
                         toast({ type: 'success', text1: 'Join link copied to clipboard!' });
                       }}
@@ -386,7 +385,7 @@ const AdminDashboard: React.FC = () => {
                 <View style={styles.section}>
                   <Text style={styles.sectionTitle}>QR Code</Text>
                   <QRCodeGenerator
-                    url={`${APP_ORIGIN}${createPageUrl(`join?code=${event.code?.toUpperCase() || ''}`)}`}
+                    url={`${APP_ORIGIN}${createPageUrl(`Join?code=${event.code?.toUpperCase() || ''}`)}`}
                     fileName={`${event.name}_QR.png`}
                   />
                 </View>

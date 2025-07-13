@@ -1,10 +1,9 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Modal, View, Text, StyleSheet, TouchableOpacity, ActivityIndicator } from 'react-native';
-import { Camera, CameraType, type BarCodeScanningResult } from 'expo-camera';
+import { Camera, CameraType, type BarcodeScanningResult } from 'expo-camera';
 import { Camera as CameraIcon, X } from 'lucide-react-native';
 
 interface Props {
-  // eslint-disable-next-line no-unused-vars
   onScan: (value: string) => void;
   onClose: () => void;
   onSwitchToManual?: () => void;
@@ -21,7 +20,7 @@ export default function QRScanner({ onScan, onClose, onSwitchToManual }: Props) 
     });
   }, []);
 
-  const handleBarCodeScanned = ({ data }: BarCodeScanningResult) => {
+  const handleBarCodeScanned = ({ data }: BarcodeScanningResult) => {
     if (!scanning) return;
     setScanning(false);
     onScan(data);

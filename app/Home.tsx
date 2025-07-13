@@ -67,14 +67,14 @@ export default function Home() {
       const eventCode = url.searchParams.get('code');
       if (eventCode) {
         closeModal();
-        navigation.navigate(createPageUrl(`join?code=${eventCode.toUpperCase()}`));
+        navigation.navigate(createPageUrl(`Join?code=${eventCode.toUpperCase()}`));
       } else {
         alert('Invalid QR code: No event code found in URL.');
       }
     } catch {
       if (typeof scannedUrl === 'string' && scannedUrl.trim().length > 3) {
         closeModal();
-        navigation.navigate(createPageUrl(`join?code=${scannedUrl.toUpperCase()}`));
+        navigation.navigate(createPageUrl(`Join?code=${scannedUrl.toUpperCase()}`));
       } else {
         alert('Invalid QR code format.');
       }
@@ -83,7 +83,7 @@ export default function Home() {
 
   const handleEventAccess = (eventCode: string) => {
     closeModal();
-    navigation.navigate(createPageUrl(`join?code=${eventCode.toUpperCase()}`));
+    navigation.navigate(createPageUrl(`Join?code=${eventCode.toUpperCase()}`));
   };
 
   const openModal = (name: 'qrScanner' | 'manualCodeEntry') => setActiveModal(name);

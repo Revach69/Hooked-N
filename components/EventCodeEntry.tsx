@@ -14,7 +14,6 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Hash, ArrowRight, X } from 'lucide-react-native';
 
 export interface EventCodeEntryProps {
-  // eslint-disable-next-line no-unused-vars
   onSubmit: (code: string) => Promise<void> | void;
   onClose: () => void;
 }

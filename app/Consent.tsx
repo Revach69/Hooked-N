@@ -27,14 +27,7 @@ import { isFileInfoSuccess } from '../lib/helpers';
 import { User, EventProfile, Event } from '../api/entities';
 import { UploadFile } from '../api/integrations';
 import { saveLocalProfile, getLocalProfile } from '../lib/localProfile';
-
-// Simple UUID v4 generator function
-function generateUUID() {
-  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
-    const r = Math.random() * 16 | 0, v = c === 'x' ? r : (r & 0x3 | 0x8);
-    return v.toString(16);
-  });
-}
+import { generateUUID } from '../utils';
 
 type Step = 'manual' | 'processing' | 'error';
 
@@ -46,7 +39,6 @@ interface DropdownOption {
 interface DropdownProps {
   options: DropdownOption[];
   value: string;
-  // eslint-disable-next-line no-unused-vars
   onChange: (val: string) => void;
   placeholder: string;
   dark?: boolean;
@@ -135,7 +127,6 @@ export default function Consent() {
   const fetchEvent = useCallback(async () => {
     const eventId = await AsyncStorage.getItem('currentEventId');
     if (!eventId) {
-      // @ts-ignore - navigation type not specified
       (navigation as any).navigate('Home');
       return;
     }
