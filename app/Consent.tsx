@@ -27,9 +27,6 @@ import { isFileInfoSuccess } from '../lib/helpers';
 import { User, EventProfile, Event } from '../api/entities';
 import { UploadFile } from '../api/integrations';
 import { saveLocalProfile, getLocalProfile } from '../lib/localProfile';
-<<<<<<< HEAD
-import { generateUUID } from '../utils';
-=======
 import { Event as EventType, FormData, FormErrors, Step, DropdownOption } from '../types';
 import { logger } from '../utils/logger';
 
@@ -41,7 +38,6 @@ const generateUUID = (): string => {
     return v.toString(16);
   });
 };
->>>>>>> 953708c96ef6745e7ca79ba67007fb824bfdca4b
 
 
 

@@ -14,6 +14,8 @@ import { EventFeedback } from '../api/entities';
 import { Button } from './ui/button';
 import { Textarea } from './ui/textarea';
 import { Label } from './ui/label';
+import { FeedbackFormData, FeedbackFormErrors } from '../types';
+import { errorHandler } from '../utils/errorHandler';
 
 interface Props {
   event: any;
@@ -21,32 +23,20 @@ interface Props {
   onClose: () => void;
 }
 
-type FormData = {
-  rating_profile_setup: string;
-  rating_interests_helpful: string;
-  rating_social_usefulness: string;
-  met_match_in_person: string;
-  open_to_other_event_types: string;
-  match_experience_feedback: string;
-  general_feedback: string;
-};
-
-type FormErrors = Partial<Record<keyof FormData, string>>;
-
 export default function FeedbackSurveyModal({ event, sessionId, onClose }: Props) {
-  const [formData, setFormData] = useState<FormData>({
-    rating_profile_setup: '',
-    rating_interests_helpful: '',
-    rating_social_usefulness: '',
-    met_match_in_person: '',
-    open_to_other_event_types: '',
-    match_experience_feedback: '',
-    general_feedback: '',
+  const [formData, setFormData] = useState<FeedbackFormData>({
+    ratingProfileSetup: '',
+    ratingInterestsHelpful: '',
+    ratingSocialUsefulness: '',
+    metMatchInPerson: '',
+    openToOtherEventTypes: '',
+    matchExperienceFeedback: '',
+    generalFeedback: '',
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [formErrors, setFormErrors] = useState<FormErrors>({});
+  const [formErrors, setFormErrors] = useState<FeedbackFormErrors>({});
 
-  const handleInputChange = (field: keyof FormData, value: string) => {
+  const handleInputChange = (field: keyof FeedbackFormData, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
     if (formErrors[field]) {
       setFormErrors(prev => ({ ...prev, [field]: undefined }));
@@ -54,24 +44,24 @@ export default function FeedbackSurveyModal({ event, sessionId, onClose }: Props
   };
 
   const validateForm = () => {
-    const errors: FormErrors = {};
-    if (!formData.rating_profile_setup) {
-      errors.rating_profile_setup = 'Please rate the profile setup experience.';
+    const errors: FeedbackFormErrors = {};
+    if (!formData.ratingProfileSetup) {
+      errors.ratingProfileSetup = 'Please rate the profile setup experience.';
     }
-    if (!formData.rating_interests_helpful) {
-      errors.rating_interests_helpful = 'Please rate how helpful interests were.';
+    if (!formData.ratingInterestsHelpful) {
+      errors.ratingInterestsHelpful = 'Please rate how helpful interests were.';
     }
-    if (!formData.rating_social_usefulness) {
-      errors.rating_social_usefulness = 'Please rate the social interaction experience.';
+    if (!formData.ratingSocialUsefulness) {
+      errors.ratingSocialUsefulness = 'Please rate the social interaction experience.';
     }
-    if (!formData.met_match_in_person) {
-      errors.met_match_in_person = 'Please let us know if you met someone in person.';
+    if (!formData.metMatchInPerson) {
+      errors.metMatchInPerson = 'Please let us know if you met someone in person.';
     }
-    if (!formData.open_to_other_event_types) {
-      errors.open_to_other_event_types = 'Please let us know about future event interest.';
+    if (!formData.openToOtherEventTypes) {
+      errors.openToOtherEventTypes = 'Please let us know about future event interest.';
     }
-    if (!formData.match_experience_feedback.trim()) {
-      errors.match_experience_feedback = 'Please share what we could improve.';
+    if (!formData.matchExperienceFeedback.trim()) {
+      errors.matchExperienceFeedback = 'Please share what we could improve.';
     }
     setFormErrors(errors);
     return Object.keys(errors).length === 0;
@@ -87,18 +77,18 @@ export default function FeedbackSurveyModal({ event, sessionId, onClose }: Props
       await EventFeedback.create({
         event_id: event.id,
         session_id: sessionId,
-        rating_profile_setup: parseInt(formData.rating_profile_setup, 10),
-        rating_interests_helpful: parseInt(formData.rating_interests_helpful, 10),
-        rating_social_usefulness: parseInt(formData.rating_social_usefulness, 10),
-        met_match_in_person: formData.met_match_in_person === 'true',
-        open_to_other_event_types: formData.open_to_other_event_types === 'true',
-        match_experience_feedback: formData.match_experience_feedback.trim(),
-        general_feedback: formData.general_feedback.trim() || null,
+        rating_profile_setup: parseInt(formData.ratingProfileSetup, 10),
+        rating_interests_helpful: parseInt(formData.ratingInterestsHelpful, 10),
+        rating_social_usefulness: parseInt(formData.ratingSocialUsefulness, 10),
+        met_match_in_person: formData.metMatchInPerson === 'true',
+        open_to_other_event_types: formData.openToOtherEventTypes === 'true',
+        match_experience_feedback: formData.matchExperienceFeedback.trim(),
+        general_feedback: formData.generalFeedback.trim() || null,
       });
       toast({ type: 'success', text1: 'Thanks for your feedback 💘' });
       onClose();
     } catch (err) {
-      console.error('Error submitting feedback:', err);
+      errorHandler.handleError(err, 'FeedbackSurveyModal:handleSubmit', 'Error submitting feedback');
       toast({ type: 'error', text1: 'Failed to submit feedback. Please try again.' });
     } finally {
       setIsSubmitting(false);
@@ -142,62 +132,62 @@ export default function FeedbackSurveyModal({ event, sessionId, onClose }: Props
           <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent}>
             <View style={styles.field}>
               <Label style={styles.label}>How easy was it to set up your profile? *</Label>
-              <StarRating value={formData.rating_profile_setup} onChange={v => handleInputChange('rating_profile_setup', v)} />
-              {formErrors.rating_profile_setup && <Text style={styles.error}>{formErrors.rating_profile_setup}</Text>}
+              <StarRating value={formData.ratingProfileSetup} onChange={v => handleInputChange('ratingProfileSetup', v)} />
+              {formErrors.ratingProfileSetup && <Text style={styles.error}>{formErrors.ratingProfileSetup}</Text>}
             </View>
             <View style={styles.field}>
               <Label style={styles.label}>How helpful were profile interests in choosing who to like? *</Label>
-              <StarRating value={formData.rating_interests_helpful} onChange={v => handleInputChange('rating_interests_helpful', v)} />
-              {formErrors.rating_interests_helpful && <Text style={styles.error}>{formErrors.rating_interests_helpful}</Text>}
+              <StarRating value={formData.ratingInterestsHelpful} onChange={v => handleInputChange('ratingInterestsHelpful', v)} />
+              {formErrors.ratingInterestsHelpful && <Text style={styles.error}>{formErrors.ratingInterestsHelpful}</Text>}
             </View>
             <View style={styles.field}>
               <Label style={styles.label}>How easy was it to interact with others? *</Label>
-              <StarRating value={formData.rating_social_usefulness} onChange={v => handleInputChange('rating_social_usefulness', v)} />
-              {formErrors.rating_social_usefulness && <Text style={styles.error}>{formErrors.rating_social_usefulness}</Text>}
+              <StarRating value={formData.ratingSocialUsefulness} onChange={v => handleInputChange('ratingSocialUsefulness', v)} />
+              {formErrors.ratingSocialUsefulness && <Text style={styles.error}>{formErrors.ratingSocialUsefulness}</Text>}
             </View>
             <View style={styles.field}>
               <Label style={styles.label}>Did you meet up with a match? *</Label>
               <View style={styles.pickerWrapper}>
                 <Picker
-                  selectedValue={formData.met_match_in_person}
-                  onValueChange={v => handleInputChange('met_match_in_person', String(v))}
+                  selectedValue={formData.metMatchInPerson}
+                  onValueChange={v => handleInputChange('metMatchInPerson', String(v))}
                 >
                   <Picker.Item label="Select an option" value="" />
                   <Picker.Item label="Yes" value="true" />
                   <Picker.Item label="No" value="false" />
                 </Picker>
               </View>
-              {formErrors.met_match_in_person && <Text style={styles.error}>{formErrors.met_match_in_person}</Text>}
+              {formErrors.metMatchInPerson && <Text style={styles.error}>{formErrors.metMatchInPerson}</Text>}
             </View>
             <View style={styles.field}>
               <Label style={styles.label}>Would you use Hooked at other event types? *</Label>
               <View style={styles.pickerWrapper}>
                 <Picker
-                  selectedValue={formData.open_to_other_event_types}
-                  onValueChange={v => handleInputChange('open_to_other_event_types', String(v))}
+                  selectedValue={formData.openToOtherEventTypes}
+                  onValueChange={v => handleInputChange('openToOtherEventTypes', String(v))}
                 >
                   <Picker.Item label="Select an option" value="" />
                   <Picker.Item label="Yes" value="true" />
                   <Picker.Item label="No" value="false" />
                 </Picker>
               </View>
-              {formErrors.open_to_other_event_types && <Text style={styles.error}>{formErrors.open_to_other_event_types}</Text>}
+              {formErrors.openToOtherEventTypes && <Text style={styles.error}>{formErrors.openToOtherEventTypes}</Text>}
             </View>
             <View style={styles.field}>
               <Label style={styles.label}>What would you improve? *</Label>
               <Textarea
-                value={formData.match_experience_feedback}
-                onChangeText={t => handleInputChange('match_experience_feedback', t)}
+                value={formData.matchExperienceFeedback}
+                onChangeText={t => handleInputChange('matchExperienceFeedback', t)}
                 placeholder="Tell us what could make the experience better..."
                 style={styles.textarea}
               />
-              {formErrors.match_experience_feedback && <Text style={styles.error}>{formErrors.match_experience_feedback}</Text>}
+              {formErrors.matchExperienceFeedback && <Text style={styles.error}>{formErrors.matchExperienceFeedback}</Text>}
             </View>
             <View style={styles.field}>
               <Label style={styles.label}>Other feedback?</Label>
               <Textarea
-                value={formData.general_feedback}
-                onChangeText={t => handleInputChange('general_feedback', t)}
+                value={formData.generalFeedback}
+                onChangeText={t => handleInputChange('generalFeedback', t)}
                 placeholder="Anything else you'd like to share..."
                 style={styles.textarea}
               />

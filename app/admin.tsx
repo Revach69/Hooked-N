@@ -23,15 +23,8 @@ import EventFormModal from '../components/admin/EventFormModal';
 import EventAnalyticsModal from '../components/admin/EventAnalyticsModal';
 import DeleteConfirmationDialog from '../components/admin/DeleteConfirmationDialog';
 import FeedbackInsightsModal from '../components/admin/FeedbackInsightsModal';
-<<<<<<< HEAD
-import * as Clipboard from 'expo-clipboard';
-import * as FileSystem from 'expo-file-system';
-import * as Sharing from 'expo-sharing';
-import { createPageUrl } from '../utils';
-=======
 import AdminEventCard from '../components/admin/AdminEventCard';
 import { downloadEventData } from '../utils/csvExport';
->>>>>>> 953708c96ef6745e7ca79ba67007fb824bfdca4b
 
 interface EventEntity {
   id: string | number
@@ -43,12 +36,6 @@ interface EventEntity {
 }
 
 const ADMIN_PASSCODE = "HOOKEDADMIN24";
-
-<<<<<<< HEAD
-
-
-=======
->>>>>>> 953708c96ef6745e7ca79ba67007fb824bfdca4b
 const AdminDashboard: React.FC = () => {
   const [password, setPassword] = useState('');
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -186,118 +173,6 @@ const AdminDashboard: React.FC = () => {
           </Button>
         </View>
       ) : (
-<<<<<<< HEAD
-        events.map(event => {
-          const now = new Date();
-          const isActive =
-            !!event.starts_at &&
-            !!event.expires_at &&
-            new Date(event.starts_at) <= now &&
-            now <= new Date(event.expires_at);
-          return (
-            <Card key={event.id} style={styles.eventCard}>
-              <CardHeader style={styles.eventHeader}>
-                <View style={styles.headerContent}>
-                  <View style={{ flex: 1 }}>
-                    <CardTitle>
-                      <Text style={styles.eventName}>{event.name}</Text>
-                    </CardTitle>
-                    <View style={styles.codeRow}>
-                      <View style={styles.codeItem}>
-                        <Hash size={14} color="#fff" />
-                        <Text style={styles.codeText}>{event.code?.toUpperCase() || 'No Code'}</Text>
-                      </View>
-                      {event.location ? (
-                        <View style={styles.codeItem}>
-                          <MapPin size={14} color="#fff" />
-                          <Text style={styles.codeText}>{event.location}</Text>
-                        </View>
-                      ) : null}
-                    </View>
-                  </View>
-                  <Badge style={isActive ? styles.activeBadge : styles.inactiveBadge}>
-                    {isActive ? 'Active' : 'Inactive'}
-                  </Badge>
-                </View>
-              </CardHeader>
-              <CardContent>
-                <View style={styles.section}>
-                  <Text style={styles.sectionTitle}>Schedule</Text>
-                  <Text style={styles.sectionText}>
-                    Starts: {event.starts_at ? new Date(event.starts_at).toLocaleString() : 'Not set'}
-                  </Text>
-                  <Text style={styles.sectionText}>
-                    Expires: {event.expires_at ? new Date(event.expires_at).toLocaleString() : 'Not set'}
-                  </Text>
-                </View>
-                <View style={styles.section}>
-                  <Text style={styles.sectionTitle}>Join Link</Text>
-                  <View style={styles.linkRow}>
-                    <Input
-                      value={`${APP_ORIGIN}${createPageUrl(`Join?code=${event.code?.toUpperCase() || ''}`)}`}
-                      editable={false}
-                      style={styles.linkInput}
-                    />
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      onPress={() => {
-                        Clipboard.setStringAsync(
-                          `${APP_ORIGIN}${createPageUrl(`Join?code=${event.code?.toUpperCase() || ''}`)}`
-                        );
-                        toast({ type: 'success', text1: 'Join link copied to clipboard!' });
-                      }}
-                    >
-                      <Copy size={16} />
-                    </Button>
-                  </View>
-                </View>
-                <View style={styles.section}>
-                  <Text style={styles.sectionTitle}>QR Code</Text>
-                  <QRCodeGenerator
-                    url={`${APP_ORIGIN}${createPageUrl(`Join?code=${event.code?.toUpperCase() || ''}`)}`}
-                    fileName={`${event.name}_QR.png`}
-                  />
-                </View>
-              </CardContent>
-              <CardFooter style={styles.footer}>
-                <Button variant="outline" onPress={() => openModal('analytics', event)} style={styles.actionButton}>
-                  <BarChart2 size={14} style={styles.icon} />
-                  <Text style={styles.actionText}>Analytics</Text>
-                </Button>
-                <Button variant="outline" onPress={() => openModal('feedbacks', event)} style={styles.actionButton}>
-                  <MessageSquare size={14} style={styles.icon} />
-                  <Text style={styles.actionText}>Feedbacks</Text>
-                </Button>
-                <Button variant="outline" onPress={() => openModal('form', event)} style={styles.actionButton}>
-                  <Edit size={14} style={styles.icon} />
-                  <Text style={styles.actionText}>Edit</Text>
-                </Button>
-                <Button onPress={() => handleDownload(event)} disabled={downloadingEventId === event.id} style={styles.actionButton}>
-                  {downloadingEventId === event.id ? (
-                    <Loader2 size={14} style={styles.icon} />
-                  ) : (
-                    <Download size={14} style={styles.icon} />
-                  )}
-                  <Text style={styles.actionText}>Download</Text>
-                </Button>
-                <Button
-                  variant="outline"
-                  onPress={() => toast({ type: 'info', text1: 'Coming soon!' })}
-                  style={styles.actionButton}
-                >
-                  <FileImage size={14} style={styles.icon} />
-                  <Text style={styles.actionText}>QR Sign</Text>
-                </Button>
-                <Button variant="destructive" onPress={() => openModal('delete', event)} style={styles.actionButton}>
-                  <Trash2 size={14} style={styles.icon} />
-                  <Text style={styles.actionText}>Delete</Text>
-                </Button>
-              </CardFooter>
-            </Card>
-          );
-        })
-=======
         events.map(event => (
           <AdminEventCard
             key={event.id}
@@ -310,7 +185,6 @@ const AdminDashboard: React.FC = () => {
             onDelete={(event) => openModal('delete', event)}
           />
         ))
->>>>>>> 953708c96ef6745e7ca79ba67007fb824bfdca4b
       )}
 
       {modals.form && (

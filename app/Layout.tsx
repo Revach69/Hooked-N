@@ -276,7 +276,7 @@ export default function Layout({ children, currentPageName }: LayoutProps) {
         onDismiss={() => setShowMessageToast(false)}
         onView={() => {
           setShowMessageToast(false);
-          navigation.navigate('Matches' as never, { openChat: newMessageDetails.senderSessionId } as never);
+          navigation.navigate('Matches' as never);
         }}
       />
 

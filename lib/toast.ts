@@ -12,4 +12,33 @@ export function toast(arg: ToastArg) {
   }
 }
 
+// Add convenience methods
+toast.success = (message: string) => {
+  Toast.show({
+    type: 'success',
+    text1: message,
+  });
+};
+
+toast.error = (message: string) => {
+  Toast.show({
+    type: 'error',
+    text1: message,
+  });
+};
+
+toast.info = (message: string) => {
+  Toast.show({
+    type: 'info',
+    text1: message,
+  });
+};
+
+toast.warning = (message: string) => {
+  Toast.show({
+    type: 'warning',
+    text1: message,
+  });
+};
+
 export default toast;

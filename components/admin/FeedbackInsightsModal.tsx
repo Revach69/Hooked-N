@@ -4,6 +4,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../ui/dialog';
 import { Button } from '../ui/button';
 import { EventFeedback } from '../../api/entities';
 import { X } from 'lucide-react-native';
+import { EventFeedback as EventFeedbackType } from '../../types';
+import { errorHandler } from '../../utils/errorHandler';
 
 interface EventData {
   id: string | number;
@@ -17,16 +19,16 @@ export interface FeedbackInsightsModalProps {
 }
 
 const FeedbackInsightsModal: React.FC<FeedbackInsightsModalProps> = ({ event, isOpen, onClose }) => {
-  const [feedbacks, setFeedbacks] = useState<any[]>([]);
+  const [feedbacks, setFeedbacks] = useState<EventFeedbackType[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   const loadFeedbacks = useCallback(async () => {
     setIsLoading(true);
     try {
       const list = await EventFeedback.filter({ event_id: event.id });
-      setFeedbacks(list);
+      setFeedbacks(list as EventFeedbackType[]);
     } catch (err) {
-      console.error('Error loading feedbacks:', err);
+      errorHandler.handleError(err, 'FeedbackInsightsModal:loadFeedbacks', 'Error loading feedbacks');
     }
     setIsLoading(false);
   }, [event.id]);
@@ -59,7 +61,7 @@ const FeedbackInsightsModal: React.FC<FeedbackInsightsModalProps> = ({ event, is
             ) : (
               feedbacks.map((fb, idx) => (
                 <View key={idx} style={styles.item}>
-                  <Text>{fb.general_feedback || 'No comments'}</Text>
+                  <Text>{fb.generalFeedback || 'No comments'}</Text>
                 </View>
               ))
             )}

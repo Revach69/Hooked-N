@@ -1,0 +1,118 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ✅ Helper functions for common checks
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return request.auth.uid == userId;
+    }
+    
+    function isAdmin() {
+      return request.auth != null && 
+             exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+    
+    function isValidSessionId(sessionId) {
+      return sessionId is string && sessionId.size() > 0 && sessionId.size() <= 100;
+    }
+    
+    function isValidProfile(data) {
+      return data.keys().hasAll(['fullName']) &&
+             data.fullName is string &&
+             data.fullName.size() > 0 &&
+             data.fullName.size() <= 100 &&
+             (data.phoneNumber == null || (data.phoneNumber is string && data.phoneNumber.size() <= 20)) &&
+             (data.age == null || (data.age is number && data.age >= 18 && data.age <= 120)) &&
+             (data.gender == null || (data.gender is string && data.gender.size() <= 50)) &&
+             (data.instagram == null || (data.instagram is string && data.instagram.size() <= 100)) &&
+             (data.interests == null || (data.interests is list && data.interests.size() <= 20));
+    }
+    
+    function isValidEvent(data) {
+      return data.keys().hasAll(['name']) &&
+             data.name is string &&
+             data.name.size() > 0 &&
+             data.name.size() <= 200 &&
+             (data.code == null || (data.code is string && data.code.size() <= 20)) &&
+             (data.location == null || (data.location is string && data.location.size() <= 200)) &&
+             (data.starts_at == null || data.starts_at is timestamp) &&
+             (data.expires_at == null || data.expires_at is timestamp);
+    }
+    
+    // ✅ Profiles collection - users can only access their own profile
+    match /profiles/{sessionId} {
+      allow read, write: if isAuthenticated() && 
+                           isValidSessionId(sessionId) &&
+                           (isOwner(sessionId) || isAdmin());
+      
+      allow create: if isAuthenticated() && 
+                      isValidSessionId(sessionId) &&
+                      isValidProfile(resource.data) &&
+                      (isOwner(sessionId) || isAdmin());
+      
+      allow update: if isAuthenticated() && 
+                      isValidSessionId(sessionId) &&
+                      isValidProfile(request.resource.data) &&
+                      (isOwner(sessionId) || isAdmin());
+      
+      allow delete: if isAuthenticated() && 
+                      isValidSessionId(sessionId) &&
+                      (isOwner(sessionId) || isAdmin());
+    }
+    
+    // ✅ Events collection - read access for all, write for admins only
+    match /events/{eventId} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated() && isAdmin() && isValidEvent(request.resource.data);
+    }
+    
+    // ✅ Event profiles collection - users can only access their own event profiles
+    match /event_profiles/{profileId} {
+      allow read, write: if isAuthenticated() && 
+                           (isOwner(resource.data.session_id) || isAdmin());
+    }
+    
+    // ✅ Likes collection - users can only access their own likes
+    match /likes/{likeId} {
+      allow read, write: if isAuthenticated() && 
+                           (isOwner(resource.data.session_id) || isAdmin());
+    }
+    
+    // ✅ Messages collection - users can only access messages they're part of
+    match /messages/{messageId} {
+      allow read, write: if isAuthenticated() && 
+                           (isOwner(resource.data.sender_session_id) || 
+                            isOwner(resource.data.receiver_session_id) || 
+                            isAdmin());
+    }
+    
+    // ✅ Contact shares collection - users can only access their own contact shares
+    match /contact_shares/{shareId} {
+      allow read, write: if isAuthenticated() && 
+                           (isOwner(resource.data.session_id) || isAdmin());
+    }
+    
+    // ✅ Event feedback collection - users can only access their own feedback
+    match /event_feedback/{feedbackId} {
+      allow read, write: if isAuthenticated() && 
+                           (isOwner(resource.data.session_id) || isAdmin());
+    }
+    
+    // ✅ Users collection - users can only access their own user data
+    match /users/{userId} {
+      allow read, write: if isAuthenticated() && 
+                           (isOwner(userId) || isAdmin());
+    }
+    
+    // ✅ Deny all other access
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+} 

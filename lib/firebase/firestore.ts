@@ -5,10 +5,12 @@ import {
   getDoc,
   updateDoc,
   deleteDoc,
+  Firestore,
 } from 'firebase/firestore';
 import { firebaseApp } from '../firebaseConfig';
+import { errorHandler } from '../../utils/errorHandler';
 
-const firestore = getFirestore(firebaseApp);
+const firestore: Firestore = getFirestore(firebaseApp);
 
 export { firestore };
 
@@ -89,24 +91,24 @@ export async function saveProfile(
   data: Profile,
 ): Promise<void> {
   if (!sessionId || typeof sessionId !== 'string') {
-    console.error('saveProfile requires a valid sessionId');
+    errorHandler.handleValidationError(['Invalid sessionId'], 'Firestore:saveProfile', 'Invalid session ID provided');
     return;
   }
   if (!isProfile(data)) {
-    console.error('saveProfile requires valid profile data');
+    errorHandler.handleValidationError(['Invalid profile data'], 'Firestore:saveProfile', 'Invalid profile data provided');
     return;
   }
 
   try {
     await setDoc(doc(firestore, 'profiles', sessionId), data);
   } catch (error) {
-    console.error(`Error saving profile for sessionId ${sessionId}:`, error);
+    errorHandler.handleFirebaseError(error, 'saveProfile', `Failed to save profile for session ${sessionId}`);
   }
 }
 
 export async function getProfile(sessionId: string): Promise<Profile | null> {
   if (!sessionId || typeof sessionId !== 'string') {
-    console.error('getProfile requires a valid sessionId');
+    errorHandler.handleValidationError(['Invalid sessionId'], 'Firestore:getProfile', 'Invalid session ID provided');
     return null;
   }
 
@@ -117,11 +119,11 @@ export async function getProfile(sessionId: string): Promise<Profile | null> {
       if (isProfile(data)) {
         return data;
       }
-      console.error(`Profile data for sessionId ${sessionId} is invalid`);
+      errorHandler.handleValidationError(['Invalid profile data'], 'Firestore:getProfile', `Profile data for session ${sessionId} is invalid`);
     }
     return null;
   } catch (error) {
-    console.error(`Error retrieving profile for sessionId ${sessionId}:`, error);
+    errorHandler.handleFirebaseError(error, 'getProfile', `Failed to retrieve profile for session ${sessionId}`);
     return null;
   }
 }
@@ -131,30 +133,30 @@ export async function updateProfile(
   data: Partial<Profile>,
 ): Promise<void> {
   if (!sessionId || typeof sessionId !== 'string') {
-    console.error('updateProfile requires a valid sessionId');
+    errorHandler.handleValidationError(['Invalid sessionId'], 'Firestore:updateProfile', 'Invalid session ID provided');
     return;
   }
   if (!isPartialProfile(data)) {
-    console.error('updateProfile requires valid profile data');
+    errorHandler.handleValidationError(['Invalid profile data'], 'Firestore:updateProfile', 'Invalid profile data provided');
     return;
   }
 
   try {
     await updateDoc(doc(firestore, 'profiles', sessionId), data);
   } catch (error) {
-    console.error(`Error updating profile for sessionId ${sessionId}:`, error);
+    errorHandler.handleFirebaseError(error, 'updateProfile', `Failed to update profile for session ${sessionId}`);
   }
 }
 
 export async function deleteProfile(sessionId: string): Promise<void> {
   if (!sessionId || typeof sessionId !== 'string') {
-    console.error('deleteProfile requires a valid sessionId');
+    errorHandler.handleValidationError(['Invalid sessionId'], 'Firestore:deleteProfile', 'Invalid session ID provided');
     return;
   }
 
   try {
     await deleteDoc(doc(firestore, 'profiles', sessionId));
   } catch (error) {
-    console.error(`Error deleting profile for sessionId ${sessionId}:`, error);
+    errorHandler.handleFirebaseError(error, 'deleteProfile', `Failed to delete profile for session ${sessionId}`);
   }
 }

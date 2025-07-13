@@ -1,5 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Profile } from './firebase/firestore';
+import { errorHandler } from '../utils/errorHandler';
 
 export interface LocalProfile extends Profile {
   profile_photo_url?: string;
@@ -40,7 +41,7 @@ export async function saveLocalProfile(profile: LocalProfile): Promise<void> {
   try {
     await AsyncStorage.setItem(LOCAL_PROFILE_KEY, JSON.stringify(profile));
   } catch (error) {
-    console.error('Error saving local profile:', error);
+    errorHandler.handleError(error, 'LocalProfile:saveLocalProfile', 'Failed to save profile locally');
   }
 }
 
@@ -54,7 +55,7 @@ export async function getLocalProfile(): Promise<LocalProfile | null> {
     }
     return null;
   } catch (error) {
-    console.error('Error retrieving local profile:', error);
+    errorHandler.handleError(error, 'LocalProfile:getLocalProfile', 'Failed to retrieve local profile');
     return null;
   }
 }

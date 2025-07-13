@@ -2,18 +2,28 @@ import React from 'react';
 import { Modal, View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 
 interface AlertDialogProps {
-  visible: boolean;
+  visible?: boolean;
+  open?: boolean;
   onClose?: () => void;
+  onOpenChange?: (open: boolean) => void;
   children?: React.ReactNode;
 }
 
-const AlertDialog = ({ visible, onClose, children }: AlertDialogProps) => (
-  <Modal transparent visible={visible} onRequestClose={onClose} animationType="fade">
-    <TouchableOpacity style={styles.overlay} activeOpacity={1} onPress={onClose}>
-      <View style={styles.content}>{children}</View>
-    </TouchableOpacity>
-  </Modal>
-);
+const AlertDialog = ({ visible, open, onClose, onOpenChange, children }: AlertDialogProps) => {
+  const isVisible = visible ?? open ?? false;
+  const handleClose = () => {
+    onClose?.();
+    onOpenChange?.(false);
+  };
+
+  return (
+    <Modal transparent visible={isVisible} onRequestClose={handleClose} animationType="fade">
+      <TouchableOpacity style={styles.overlay} activeOpacity={1} onPress={handleClose}>
+        <View style={styles.content}>{children}</View>
+      </TouchableOpacity>
+    </Modal>
+  );
+};
 
 const AlertDialogTrigger: React.FC<{ onPress?: () => void; children?: React.ReactNode }> = ({ onPress, children }) => (
   <TouchableOpacity onPress={onPress}>{children}</TouchableOpacity>

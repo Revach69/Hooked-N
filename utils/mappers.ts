@@ -6,13 +6,15 @@ import {
   Like, 
   EventFeedback, 
   ContactShare,
+  EventProfile,
   DbUserProfile,
   DbEvent,
   DbMatch,
   DbMessage,
   DbLike,
   DbEventFeedback,
-  DbContactShare
+  DbContactShare,
+  DbEventProfile
 } from '../types';
 
 // Database to Frontend mappings
@@ -93,13 +95,50 @@ export const mapDbToEventFeedback = (dbData: DbEventFeedback): EventFeedback => 
 
 export const mapDbToContactShare = (dbData: DbContactShare): ContactShare => ({
   id: dbData.id,
-  senderSessionId: dbData.sender_session_id,
+  sharerSessionId: dbData.sharer_session_id,
   receiverSessionId: dbData.receiver_session_id,
+  matchId: dbData.match_id,
   fullName: dbData.full_name,
   phoneNumber: dbData.phone_number,
   email: dbData.email,
   instagram: dbData.instagram,
   createdAt: dbData.created_date,
+});
+
+export const mapDbToEventProfile = (dbData: DbEventProfile): EventProfile => ({
+  id: dbData.id,
+  eventId: dbData.event_id,
+  sessionId: dbData.session_id,
+  firstName: dbData.first_name,
+  email: dbData.email,
+  age: dbData.age,
+  genderIdentity: dbData.gender_identity,
+  interestedIn: dbData.interested_in,
+  profileColor: dbData.profile_color,
+  profilePhotoUrl: dbData.profile_photo_url,
+  isVisible: dbData.is_visible,
+  bio: dbData.bio,
+  height: dbData.height,
+  interests: dbData.interests,
+  createdAt: dbData.created_date,
+});
+
+export const mapEventProfileToDb = (data: EventProfile): DbEventProfile => ({
+  id: data.id,
+  event_id: data.eventId,
+  session_id: data.sessionId,
+  first_name: data.firstName,
+  email: data.email,
+  age: data.age,
+  gender_identity: data.genderIdentity,
+  interested_in: data.interestedIn,
+  profile_color: data.profileColor,
+  profile_photo_url: data.profilePhotoUrl,
+  is_visible: data.isVisible,
+  bio: data.bio,
+  height: data.height,
+  interests: data.interests,
+  created_date: data.createdAt,
 });
 
 // Frontend to Database mappings
@@ -180,8 +219,9 @@ export const mapEventFeedbackToDb = (data: EventFeedback): DbEventFeedback => ({
 
 export const mapContactShareToDb = (data: ContactShare): DbContactShare => ({
   id: data.id,
-  sender_session_id: data.senderSessionId,
+  sharer_session_id: data.sharerSessionId,
   receiver_session_id: data.receiverSessionId,
+  match_id: data.matchId,
   full_name: data.fullName,
   phone_number: data.phoneNumber,
   email: data.email,
@@ -209,4 +249,7 @@ export const mapDbArrayToEventFeedbacks = (dbArray: DbEventFeedback[]): EventFee
   dbArray.map(mapDbToEventFeedback);
 
 export const mapDbArrayToContactShares = (dbArray: DbContactShare[]): ContactShare[] =>
-  dbArray.map(mapDbToContactShare); 
+  dbArray.map(mapDbToContactShare);
+
+export const mapDbArrayToEventProfiles = (dbArray: DbEventProfile[]): EventProfile[] =>
+  dbArray.map(mapDbToEventProfile); 

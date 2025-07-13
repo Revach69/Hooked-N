@@ -9,7 +9,7 @@ export async function getSessionId(): Promise<string> {
     id = generateUUID();
     await AsyncStorage.setItem(SESSION_KEY, id);
   }
-  return id;
+  return id!;
 }
 
 export async function saveSessionId(id: string): Promise<void> {

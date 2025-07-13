@@ -109,8 +109,7 @@ const EventFormModal: React.FC<EventFormModalProps> = ({ event, isOpen, onClose,
     return Object.keys(errors).length === 0;
   };
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>): Promise<void> => {
-    e.preventDefault();
+  const handleSubmit = async (): Promise<void> => {
     if (!validateForm()) {
       toast.error("Please fix the errors before submitting.");
       return;
@@ -126,7 +125,7 @@ const EventFormModal: React.FC<EventFormModalProps> = ({ event, isOpen, onClose,
       };
 
       if (event) {
-        await Event.update(event.id, payload);
+        await Event.update(String(event.id), payload);
         toast.success(`Event "${payload.name}" updated successfully.`);
       } else {
         await Event.create(payload);

@@ -4,23 +4,12 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../ui/dialog';
 import { Button } from '../ui/button';
 import { EventProfile, Like, Message } from '../../api/entities';
 import { X } from 'lucide-react-native';
+import { AnalyticsData, EventProfile as EventProfileType, Like as LikeType, Message as MessageType } from '../../types';
+import { errorHandler } from '../../utils/errorHandler';
 
 interface EventData {
   id: string | number;
   name: string;
-}
-
-interface Analytics {
-  profiles: any[];
-  likes: any[];
-  messages: any[];
-  stats: {
-    totalProfiles: number;
-    totalLikes: number;
-    mutualMatches: number;
-    totalMessages: number;
-    averageAge: number;
-  };
 }
 
 export interface EventAnalyticsModalProps {
@@ -30,7 +19,7 @@ export interface EventAnalyticsModalProps {
 }
 
 const EventAnalyticsModal: React.FC<EventAnalyticsModalProps> = ({ event, isOpen, onClose }) => {
-  const [analytics, setAnalytics] = useState<Analytics>({
+  const [analytics, setAnalytics] = useState<AnalyticsData>({
     profiles: [],
     likes: [],
     messages: [],
@@ -62,13 +51,13 @@ const EventAnalyticsModal: React.FC<EventAnalyticsModalProps> = ({ event, isOpen
       const averageAge = ages.length > 0 ? Math.round(ages.reduce((a, b) => a + b, 0) / ages.length) : 0;
 
       setAnalytics({
-        profiles,
-        likes,
-        messages,
+        profiles: profiles as EventProfileType[],
+        likes: likes as LikeType[],
+        messages: messages as MessageType[],
         stats: { totalProfiles, totalLikes, mutualMatches, totalMessages, averageAge },
       });
     } catch (err) {
-      console.error('Error loading analytics:', err);
+      errorHandler.handleError(err, 'EventAnalyticsModal:loadAnalytics', 'Error loading analytics');
     }
     setIsLoading(false);
   }, [event.id]);

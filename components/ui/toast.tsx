@@ -26,7 +26,7 @@ const Toast = React.forwardRef<View, ToastProps>(
   )
 );
 
-const ToastAction = React.forwardRef<TouchableOpacity, TouchableOpacityProps>(({
+const ToastAction = React.forwardRef<React.ComponentRef<typeof TouchableOpacity>, TouchableOpacityProps>(({
   children,
   ...props
 }, ref) => (
@@ -35,7 +35,7 @@ const ToastAction = React.forwardRef<TouchableOpacity, TouchableOpacityProps>(({
   </TouchableOpacity>
 ));
 
-const ToastClose = React.forwardRef<TouchableOpacity, TouchableOpacityProps>((props, ref) => (
+const ToastClose = React.forwardRef<React.ComponentRef<typeof TouchableOpacity>, TouchableOpacityProps>((props, ref) => (
   <TouchableOpacity ref={ref} {...props}>
     <Text style={styles.close}>×</Text>
   </TouchableOpacity>

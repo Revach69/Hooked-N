@@ -2,18 +2,28 @@ import React from 'react';
 import { Modal, View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 
 interface DialogProps {
-  visible: boolean;
+  visible?: boolean;
+  open?: boolean;
   onClose?: () => void;
+  onOpenChange?: (open: boolean) => void;
   children?: React.ReactNode;
 }
 
-const Dialog = ({ visible, onClose, children }: DialogProps) => (
-  <Modal transparent visible={visible} onRequestClose={onClose} animationType="fade">
-    <TouchableOpacity style={styles.overlay} activeOpacity={1} onPress={onClose}>
-      <View style={styles.content}>{children}</View>
-    </TouchableOpacity>
-  </Modal>
-);
+const Dialog = ({ visible, open, onClose, onOpenChange, children }: DialogProps) => {
+  const isVisible = visible ?? open ?? false;
+  const handleClose = () => {
+    onClose?.();
+    onOpenChange?.(false);
+  };
+
+  return (
+    <Modal transparent visible={isVisible} onRequestClose={handleClose} animationType="fade">
+      <TouchableOpacity style={styles.overlay} activeOpacity={1} onPress={handleClose}>
+        <View style={styles.content}>{children}</View>
+      </TouchableOpacity>
+    </Modal>
+  );
+};
 
 const DialogTrigger: React.FC<{ onPress?: () => void; children?: React.ReactNode }> = ({ onPress, children }) => (
   <TouchableOpacity onPress={onPress}>{children}</TouchableOpacity>

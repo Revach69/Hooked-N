@@ -10,26 +10,22 @@ import { Card, CardContent } from "../components/ui/card";
 import { Button } from "../components/ui/button";
 import { Badge } from "../components/ui/badge";
 import { Heart, MessageCircle, Users, Sparkles } from "lucide-react-native";
-import { EventProfile, Like, Message } from "../api/entities";
+import { EventProfile as EventProfileApi, Like, Message } from "../api/entities";
+import { Match, EventProfile } from '../types';
+import { mapDbToMatch, mapDbToEventProfile } from '../utils/mappers';
+import { isDbEventProfileArray } from '../utils/typeGuards';
 import ChatModal from "../components/ChatModal";
 import ProfileDetailModal from "../components/ProfileDetailModal";
 
-type MatchProfile = {
-  session_id: string;
-  first_name?: string;
-  age?: number;
-  interests?: string[];
-  profile_photo_url?: string;
-  profile_color?: string;
-  unreadCount?: number;
-  [key: string]: any;
-};
+interface MatchWithUnreadCount extends Match {
+  unreadCount: number;
+}
 
 export default function Matches() {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-  const [matches, setMatches] = useState<any[]>([]);
-  const [selectedMatch, setSelectedMatch] = useState<any>(null);
-  const [selectedProfileForDetail, setSelectedProfileForDetail] = useState<any>(null);
+  const [matches, setMatches] = useState<MatchWithUnreadCount[]>([]);
+  const [selectedMatch, setSelectedMatch] = useState<MatchWithUnreadCount | null>(null);
+  const [selectedProfileForDetail, setSelectedProfileForDetail] = useState<EventProfile | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isTabActive, setIsTabActive] = useState<boolean>(true);
   const [imageErrorMap, setImageErrorMap] = useState<Record<string, boolean>>({});
@@ -47,14 +43,14 @@ export default function Matches() {
     loadIds();
   }, [loadIds]);
 
-  const markMatchesAsNotified = useCallback(async (mutualMatchProfiles: MatchProfile[]) => {
+  const markMatchesAsNotified = useCallback(async (mutualMatchProfiles: MatchWithUnreadCount[]) => {
     if (!currentSessionId || !eventId || mutualMatchProfiles.length === 0) return;
 
     const allMutualLikesForEvent = await Like.filter({ event_id: eventId, is_mutual: true });
 
     for (const matchProfile of mutualMatchProfiles) {
       const myLikeToThem = allMutualLikesForEvent.find(l => 
-        l.liker_session_id === currentSessionId && l.liked_session_id === matchProfile.session_id
+        l.liker_session_id === currentSessionId && l.liked_session_id === matchProfile.sessionId
       );
       if (myLikeToThem && !myLikeToThem.liker_notified_of_match) {
         try {
@@ -65,7 +61,7 @@ export default function Matches() {
       }
 
       const theirLikeToMe = allMutualLikesForEvent.find(l => 
-        l.liker_session_id === matchProfile.session_id && l.liked_session_id === currentSessionId
+        l.liker_session_id === matchProfile.sessionId && l.liked_session_id === currentSessionId
       );
       if (theirLikeToMe && !theirLikeToMe.liked_notified_of_match) {
          try {
@@ -107,16 +103,20 @@ export default function Matches() {
         return;
       }
 
-      const profiles = await EventProfile.filter({
+      const profilesDb = await EventProfileApi.filter({
         session_id: Array.from(matchedSessionIds),
         event_id: eventId
-      }) as MatchProfile[];
+      });
       
+      if (!isDbEventProfileArray(profilesDb)) {
+        throw new Error('Invalid profile data received from database');
+      }
+      const profiles: EventProfile[] = profilesDb.map(mapDbToEventProfile);
       
       // Fetch unread message counts for each match
-      const profilesWithUnreadCounts = await Promise.all(
+      const profilesWithUnreadCounts: MatchWithUnreadCount[] = await Promise.all(
         profiles.map(async (profile) => {
-          const matchParticipants = [currentSessionId, profile.session_id].sort();
+          const matchParticipants = [currentSessionId, profile.sessionId].sort();
           const matchId = `${matchParticipants[0]}_${matchParticipants[1]}`;
           
           const unreadMessages = await Message.filter({
@@ -125,13 +125,28 @@ export default function Matches() {
             is_read: false,
             event_id: eventId
           });
-          return { ...profile, unreadCount: unreadMessages.length };
+          
+          // Convert EventProfile to Match format
+          const match: Match = {
+            id: profile.id,
+            sessionId: profile.sessionId,
+            firstName: profile.firstName,
+            profilePhotoUrl: profile.profilePhotoUrl,
+            profileColor: profile.profileColor,
+            age: profile.age,
+            interests: profile.interests || [],
+            bio: profile.bio,
+            isMutual: true,
+            createdAt: profile.createdAt,
+          };
+          
+          return { ...match, unreadCount: unreadMessages.length };
         })
       );
       
       setMatches(profilesWithUnreadCounts.filter(Boolean));
       if (profiles.length > 0) {
-        markMatchesAsNotified(profiles);
+        markMatchesAsNotified(profilesWithUnreadCounts);
       }
 
     } catch (error) {
@@ -171,7 +186,7 @@ export default function Matches() {
       const url = new URL(initialUrl);
       const openChatSessionId = url.searchParams.get('openChat');
       if (openChatSessionId && matches.length > 0) {
-        const matchToOpen = matches.find(m => m.session_id === openChatSessionId);
+        const matchToOpen = matches.find(m => m.sessionId === openChatSessionId);
         if (matchToOpen) {
           setSelectedMatch(matchToOpen);
         }
@@ -197,158 +212,283 @@ export default function Matches() {
     );
   }
 
-  return (
-    <ScrollView contentContainerStyle={styles.container}>
-      {/* Header */}
-      <View style={styles.header}>
-        <LinearGradient colors={["#ec4899", "#8b5cf6"]} style={styles.headerIcon}>
-          <Heart width={32} height={32} color="#fff" />
+  if (matches.length === 0) {
+    return (
+      <View style={styles.emptyContainer}>
+        <LinearGradient
+          colors={['#fdf2f8', '#fce7f3']}
+          style={styles.emptyGradient}
+        >
+          <Sparkles size={64} color="#ec4899" style={{ marginBottom: 16 }} />
+          <Text style={styles.emptyTitle}>No matches yet</Text>
+          <Text style={styles.emptySubtitle}>
+            Keep swiping to find your perfect match!
+          </Text>
+          <Button
+            onPress={() => navigation.navigate('Discovery')}
+            style={styles.discoveryButton}
+          >
+            Start Discovering
+          </Button>
         </LinearGradient>
-        <Text style={styles.headerTitle}>Your Matches</Text>
-        <Text style={styles.headerSubtitle}>
-          {matches.length} mutual {matches.length === 1 ? 'connection' : 'connections'} at this event
-        </Text>
+      </View>
+    );
+  }
+
+  return (
+    <View style={styles.container}>
+      <View style={styles.header}>
+        <Text style={styles.title}>Your Matches</Text>
+        <Text style={styles.subtitle}>{matches.length} mutual connections</Text>
       </View>
 
-      {/* Matches List */}
-      <View>
+      <ScrollView style={styles.matchesList} showsVerticalScrollIndicator={false}>
         {matches.map((match) => (
-          <Card key={match.id} style={styles.card}>
+          <Card key={match.id} style={styles.matchCard}>
             <CardContent style={styles.cardContent}>
-              <View style={styles.cardRow}>
-                <View style={styles.profileInfo}>
-                  <View style={styles.avatarWrapper}>
-                    {match.profile_photo_url && !imageErrorMap[match.session_id] ? (
-                      <TouchableOpacity onPress={() => setSelectedProfileForDetail(match)}>
-                        <Image
-                          source={{ uri: match.profile_photo_url }}
-                          style={styles.avatar}
-                          onError={() => setImageErrorMap(prev => ({ ...prev, [match.session_id]: true }))}
-                        />
-                      </TouchableOpacity>
-                    ) : (
-                      <TouchableOpacity
-                        onPress={() => setSelectedProfileForDetail(match)}
-                        style={[styles.avatar, styles.avatarFallback, { backgroundColor: match.profile_color }]}
-                      >
-                        <Text style={styles.profileInitial}>{match.first_name[0]}</Text>
-                      </TouchableOpacity>
-                    )}
-                    <LinearGradient colors={["#ec4899", "#ef4444"]} style={styles.sparklesBadge}>
-                      <Sparkles width={12} height={12} color="#fff" />
-                    </LinearGradient>
-                  </View>
-                  <View>
-                    <Text style={styles.name}>{match.first_name}</Text>
-                    <Text style={styles.age}>{match.age} years old</Text>
-                    <View style={styles.interestsRow}>
-                      {match.interests?.slice(0, 2).map((interest: string) => (
-                        <Badge
-                          key={interest}
-                          variant="outline"
-                          style={styles.interestBadge}
-                        >
-                          {interest}
-                        </Badge>
+              <TouchableOpacity
+                style={styles.matchSection}
+                onPress={() => {
+                  // Convert Match to EventProfile for the detail modal
+                  const eventProfile: EventProfile = {
+                    id: match.id,
+                    eventId: '', // This would need to be passed from parent
+                    sessionId: match.sessionId,
+                    firstName: match.firstName,
+                    email: '', // Not available in Match
+                    age: match.age,
+                    genderIdentity: '', // Not available in Match
+                    interestedIn: '', // Not available in Match
+                    profileColor: match.profileColor,
+                    profilePhotoUrl: match.profilePhotoUrl || '',
+                    isVisible: true, // Default value
+                    bio: match.bio,
+                    height: undefined,
+                    interests: match.interests,
+                    createdAt: match.createdAt,
+                  };
+                  setSelectedProfileForDetail(eventProfile);
+                }}
+              >
+                <View style={styles.avatarContainer}>
+                  {match.profilePhotoUrl && !imageErrorMap[match.sessionId] ? (
+                    <Image
+                      source={{ uri: match.profilePhotoUrl }}
+                      style={styles.avatar}
+                      onError={() => setImageErrorMap(prev => ({ ...prev, [match.sessionId]: true }))}
+                    />
+                  ) : (
+                    <View
+                      style={[styles.avatar, styles.avatarFallback, { backgroundColor: match.profileColor }]}
+                    >
+                      <Text style={styles.profileInitial}>{match.firstName[0]}</Text>
+                    </View>
+                  )}
+                </View>
+                
+                <View style={styles.matchInfo}>
+                  <Text style={styles.name}>{match.firstName}</Text>
+                  <Text style={styles.age}>{match.age} years old</Text>
+                  {match.interests && match.interests.length > 0 && (
+                    <View style={styles.interestsContainer}>
+                      {match.interests.slice(0, 2).map((interest, index) => (
+                        <View key={index} style={styles.interestBadge}>
+                          <Text style={styles.interestText}>{interest}</Text>
+                        </View>
                       ))}
-                      {match.interests?.length > 2 && (
-                        <Badge variant="outline" style={styles.moreBadge}>
-                          +{match.interests.length - 2}
-                        </Badge>
+                      {match.interests.length > 2 && (
+                        <Text style={styles.moreInterests}>
+                          +{match.interests.length - 2} more
+                        </Text>
                       )}
                     </View>
-                  </View>
+                  )}
                 </View>
-                <View style={styles.actions}>
-                  <Button
-                    onPress={() => setSelectedMatch(match)}
-                    style={styles.chatButton}
-                    size="icon"
-                  >
-                    <MessageCircle width={20} height={20} color="#fff" />
-                  </Button>
+              </TouchableOpacity>
+              
+              <View style={styles.actionButtons}>
+                <TouchableOpacity
+                  style={styles.chatButton}
+                  onPress={() => setSelectedMatch(match)}
+                >
+                  <MessageCircle size={20} color="#fff" />
+                  <Text style={styles.chatButtonText}>Chat</Text>
                   {match.unreadCount > 0 && (
                     <Badge style={styles.unreadBadge}>{match.unreadCount}</Badge>
                   )}
-                </View>
+                </TouchableOpacity>
               </View>
             </CardContent>
           </Card>
         ))}
+      </ScrollView>
 
-        {matches.length === 0 && !isLoading && (
-          <Card style={styles.emptyCard}>
-            <CardContent style={styles.emptyCardContent}>
-              <Users width={64} height={64} color="#9ca3af" style={{ marginBottom: 16 }} />
-              <Text style={styles.emptyTitle}>No matches yet</Text>
-              <Text style={styles.emptySubtitle}>
-                Start liking profiles to find your matches! When someone likes you back, they'll appear here.
+      <ChatModal
+        match={selectedMatch}
+        onClose={() => setSelectedMatch(null)}
+      />
 
-              </Text>
-              <Button
-                onPress={() => navigation.navigate('Discovery')}
-                style={styles.discoverButton}
-              >
-                <Text style={styles.discoverText}>Discover Singles</Text>
-              </Button>
-            </CardContent>
-          </Card>
-        )}
-      </View>
-
-      {selectedMatch && (
-        <ChatModal
-          match={selectedMatch}
-          onClose={() => {
-            setSelectedMatch(null);
-            loadMatches(); // Refresh match list to update unread counts after closing modal
-          }}
-        />
-      )}
-
-      {/* Profile Detail Modal */}
-      {selectedProfileForDetail && (
-        <ProfileDetailModal
-          profile={selectedProfileForDetail}
-          onClose={() => setSelectedProfileForDetail(null)}
-          onLike={() => {
-            // Since this is already a match, no need to like again. Just close the modal.
-            setSelectedProfileForDetail(null);
-          }}
-          isLiked={true} // Always true since this is a confirmed match
-        />
-      )}
-    </ScrollView>
+      <ProfileDetailModal
+        profile={selectedProfileForDetail}
+        isVisible={!!selectedProfileForDetail}
+        onClose={() => setSelectedProfileForDetail(null)}
+      />
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { paddingHorizontal: 16, paddingVertical: 32, alignSelf: 'center', width: '100%', maxWidth: 400 },
-  header: { alignItems: 'center', marginBottom: 32 },
-  headerIcon: { width: 64, height: 64, borderRadius: 16, alignItems: 'center', justifyContent: 'center', marginBottom: 16 },
-  headerTitle: { fontSize: 24, fontWeight: '600', color: '#111', marginBottom: 4 },
-  headerSubtitle: { color: '#6b7280' },
-  card: { borderRadius: 12, backgroundColor: 'rgba(255,255,255,0.8)', marginBottom: 16, shadowColor: '#000', shadowOpacity: 0.1, shadowRadius: 4, shadowOffset: { width: 0, height: 2 } },
-  cardContent: { padding: 24 },
-  cardRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  profileInfo: { flexDirection: 'row', alignItems: 'center', gap: 16 },
-  avatarWrapper: { position: 'relative' },
-  avatar: { width: 64, height: 64, borderRadius: 32, borderWidth: 2, borderColor: '#e9d5ff' },
-  avatarFallback: { alignItems: 'center', justifyContent: 'center' },
-  profileInitial: { color: '#fff', fontWeight: '600', fontSize: 24 },
-  sparklesBadge: { position: 'absolute', top: -4, right: -4, width: 24, height: 24, borderRadius: 12, alignItems: 'center', justifyContent: 'center', shadowColor: '#000', shadowOpacity: 0.1, shadowRadius: 2, shadowOffset: { width: 0, height: 1 } },
-  name: { fontWeight: '600', fontSize: 18, color: '#111' },
-  age: { fontSize: 12, color: '#6b7280' },
-  interestsRow: { flexDirection: 'row', flexWrap: 'wrap', marginTop: 8 },
-  interestBadge: { fontSize: 12, borderRadius: 12, borderWidth: 1, borderColor: '#e9d5ff', color: '#7c3aed', backgroundColor: '#f5f3ff', paddingHorizontal: 8, paddingVertical: 2, marginRight: 4, marginBottom: 4 },
-  moreBadge: { fontSize: 12, borderRadius: 12, borderWidth: 1, borderColor: '#d1d5db', color: '#6b7280', paddingHorizontal: 8, paddingVertical: 2, marginRight: 4, marginBottom: 4 },
-  actions: { alignItems: 'center' },
-  chatButton: { backgroundColor: '#ec4899', borderRadius: 9999 },
-  unreadBadge: { backgroundColor: '#ef4444', color: '#fff', borderRadius: 12, paddingHorizontal: 8, paddingVertical: 2, fontSize: 12, overflow: 'hidden', marginTop: 4 },
-  emptyCard: { borderRadius: 12, backgroundColor: 'rgba(255,255,255,0.8)', padding: 24, alignItems: 'center', shadowColor: '#000', shadowOpacity: 0.1, shadowRadius: 4, shadowOffset: { width: 0, height: 2 } },
-  emptyCardContent: { alignItems: 'center' },
-  emptyTitle: { fontSize: 20, fontWeight: '600', color: '#111', marginBottom: 8 },
-  emptySubtitle: { textAlign: 'center', color: '#6b7280', marginBottom: 24 },
-  discoverButton: { backgroundColor: '#a855f7', borderRadius: 12, paddingHorizontal: 24, paddingVertical: 12 },
-  discoverText: { color: '#fff', fontWeight: '600' },
+  container: {
+    flex: 1,
+    backgroundColor: '#f8fafc',
+  },
+  header: {
+    paddingHorizontal: 20,
+    paddingTop: 20,
+    paddingBottom: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#e2e8f0',
+  },
+  title: {
+    fontSize: 28,
+    fontWeight: 'bold',
+    color: '#1f2937',
+    marginBottom: 4,
+  },
+  subtitle: {
+    fontSize: 16,
+    color: '#6b7280',
+  },
+  matchesList: {
+    flex: 1,
+    paddingHorizontal: 20,
+  },
+  matchCard: {
+    marginBottom: 12,
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  cardContent: {
+    padding: 16,
+  },
+  matchSection: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  avatarContainer: {
+    marginRight: 16,
+  },
+  avatar: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+  },
+  avatarFallback: {
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  profileInitial: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#fff',
+  },
+  matchInfo: {
+    flex: 1,
+  },
+  name: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#1f2937',
+    marginBottom: 4,
+  },
+  age: {
+    fontSize: 14,
+    color: '#6b7280',
+    marginBottom: 8,
+  },
+  interestsContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    alignItems: 'center',
+  },
+  interestBadge: {
+    backgroundColor: '#f3f4f6',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 8,
+    marginRight: 4,
+    marginBottom: 2,
+  },
+  interestText: {
+    fontSize: 10,
+    color: '#374151',
+  },
+  moreInterests: {
+    fontSize: 10,
+    color: '#6b7280',
+    marginLeft: 2,
+  },
+  actionButtons: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+  },
+  chatButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#ec4899',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+    position: 'relative',
+  },
+  chatButtonText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '500',
+    marginLeft: 6,
+  },
+  unreadBadge: {
+    position: 'absolute',
+    top: -6,
+    right: -6,
+    backgroundColor: '#ef4444',
+    minWidth: 18,
+    height: 18,
+    borderRadius: 9,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  emptyContainer: {
+    flex: 1,
+  },
+  emptyGradient: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 40,
+  },
+  emptyTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#1f2937',
+    marginBottom: 8,
+  },
+  emptySubtitle: {
+    fontSize: 16,
+    color: '#6b7280',
+    textAlign: 'center',
+    marginBottom: 24,
+  },
+  discoveryButton: {
+    backgroundColor: '#ec4899',
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 25,
+  },
 });

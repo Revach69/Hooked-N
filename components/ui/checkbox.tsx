@@ -7,7 +7,7 @@ export interface CheckboxProps extends TouchableOpacityProps {
   onChange?: (checked: boolean) => void;
 }
 
-const Checkbox = React.forwardRef<TouchableOpacity, CheckboxProps>(
+const Checkbox = React.forwardRef<React.ComponentRef<typeof TouchableOpacity>, CheckboxProps>(
   ({ checked = false, onChange, style, children, ...props }, ref) => (
     <TouchableOpacity
       ref={ref}

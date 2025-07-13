@@ -8,6 +8,7 @@ import { Send, X, Clock, Share, Phone, User } from 'lucide-react-native';
 import { Message, ContactShare } from '../api/entities';
 import ContactShareModal from './ContactShareModal';
 import { format } from 'date-fns';
+import { errorHandler } from '../utils/errorHandler';
 
 interface Props {
   match: any;
@@ -57,20 +58,37 @@ export default function ChatModal({ match, onClose }: Props) {
         await Promise.all(unread.map(u => Message.update(u.id, { is_read: true })));
       }
     } catch (e) {
-      console.error('Error marking messages as read:', e);
+      errorHandler.handleError(e, 'ChatModal:markMessagesAsRead', 'Failed to mark messages as read');
     }
   }, [matchId, sessionId, eventId]);
   const loadMessages = useCallback(async () => {
     if (!eventId || !matchId) return;
     try {
-      const all = await Message.filter({ event_id: eventId, match_id: matchId }, 'created_date');
+      const all = await Message.filter({ event_id: eventId, match_id: matchId });
       setMessages(all);
       markMessagesAsRead();
     } catch (e) {
-      console.error('Error loading messages:', e);
+      errorHandler.handleError(e, 'ChatModal:loadMessages', 'Failed to load messages');
     }
     setIsLoading(false);
   }, [eventId, matchId, markMessagesAsRead]);
+
+  const loadContactShares = useCallback(async () => {
+    if (!eventId || !matchId || !sessionId) return;
+    try {
+      const mine = await ContactShare.filter({ event_id: eventId, match_id: matchId, sharer_session_id: sessionId });
+      if (mine.length > 0) setHasSharedContact(true);
+      const theirs = await ContactShare.filter({
+        event_id: eventId,
+        match_id: matchId,
+        sharer_session_id: match.session_id,
+        recipient_session_id: sessionId,
+      });
+      if (theirs.length > 0) setReceivedContactInfo(theirs[0]);
+    } catch (e) {
+      errorHandler.handleError(e, 'ChatModal:loadContactShares', 'Failed to load contact shares');
+    }
+  }, [eventId, matchId, sessionId, match.session_id]);
 
   useEffect(() => {
     const sub = AppState.addEventListener('change', s => setIsTabActive(s === 'active'));
@@ -93,23 +111,6 @@ export default function ChatModal({ match, onClose }: Props) {
   useEffect(() => {
     scrollRef.current?.scrollToEnd({ animated: true });
   }, [messages]);
-
-  const loadContactShares = useCallback(async () => {
-    if (!eventId || !matchId || !sessionId) return;
-    try {
-      const mine = await ContactShare.filter({ event_id: eventId, match_id: matchId, sharer_session_id: sessionId });
-      if (mine.length > 0) setHasSharedContact(true);
-      const theirs = await ContactShare.filter({
-        event_id: eventId,
-        match_id: matchId,
-        sharer_session_id: match.session_id,
-        recipient_session_id: sessionId,
-      });
-      if (theirs.length > 0) setReceivedContactInfo(theirs[0]);
-    } catch (e) {
-      console.error('Error loading contact shares:', e);
-    }
-  }, [eventId, matchId, sessionId, match.session_id]);
   const sendMessage = async () => {
     if (!newMessage.trim()) return;
     if (!sessionId || !eventId || !matchId) return;

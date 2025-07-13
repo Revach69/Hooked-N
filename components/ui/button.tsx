@@ -38,7 +38,7 @@ const sizeStyles: Record<Required<ButtonProps>['size'], ViewStyle> = {
   icon: { padding: 8, width: 40, height: 40, justifyContent: 'center', alignItems: 'center' },
 };
 
-const Button = React.forwardRef<TouchableOpacity, ButtonProps>(
+const Button = React.forwardRef<React.ComponentRef<typeof TouchableOpacity>, ButtonProps>(
   (
     {
       children,

@@ -2,29 +2,18 @@ import React from 'react';
 import { Modal, View, Text, Image, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
 import { Heart, X, Calendar, Ruler } from 'lucide-react-native';
 import { Button } from './ui/button';
-
-export interface Profile {
-  profile_photo_url?: string;
-  profile_color?: string;
-  first_name: string;
-  age?: number;
-  height?: number;
-  interests?: string[];
-  bio?: string;
-  session_id?: string;
-}
+import { EventProfile } from '../types';
 
 interface Props {
-  profile: Profile;
+  profile: EventProfile | null;
+  isVisible: boolean;
   onClose: () => void;
-  onLike: () => void;
-  isLiked: boolean;
 }
 
-export default function ProfileDetailModal({ profile, onClose, onLike, isLiked }: Props) {
-  if (!profile) return null;
-  const { profile_photo_url, profile_color, first_name, age, height, interests, bio } = profile;
-  const avatarInitial = first_name ? first_name[0].toUpperCase() : '?';
+export default function ProfileDetailModal({ profile, isVisible, onClose }: Props) {
+  if (!profile || !isVisible) return null;
+  const { profilePhotoUrl, profileColor, firstName, age, height, interests, bio } = profile;
+  const avatarInitial = firstName ? firstName[0].toUpperCase() : '?';
 
   return (
     <Modal visible onRequestClose={onClose} animationType="slide" transparent>
@@ -32,15 +21,15 @@ export default function ProfileDetailModal({ profile, onClose, onLike, isLiked }
         <View style={styles.container}>
           <ScrollView>
             <View style={styles.imageWrapper}>
-              {profile_photo_url ? (
+              {profilePhotoUrl ? (
                 <Image
-                  source={{ uri: profile_photo_url }}
+                  source={{ uri: profilePhotoUrl }}
                   style={styles.image}
                   resizeMode="cover"
                   onError={() => {}}
                 />
               ) : (
-                <View style={[styles.fallback, { backgroundColor: profile_color || '#888' }]}> 
+                <View style={[styles.fallback, { backgroundColor: profileColor || '#888' }]}> 
                   <Text style={styles.fallbackText}>{avatarInitial}</Text>
                 </View>
               )}
@@ -49,7 +38,7 @@ export default function ProfileDetailModal({ profile, onClose, onLike, isLiked }
               </TouchableOpacity>
             </View>
             <View style={styles.section}>
-              <Text style={styles.name}>{first_name}</Text>
+              <Text style={styles.name}>{firstName}</Text>
               <View style={styles.metaRow}>
                 {age && (
                   <View style={styles.metaItem}>
@@ -76,15 +65,6 @@ export default function ProfileDetailModal({ profile, onClose, onLike, isLiked }
               )}
             </View>
           </ScrollView>
-          <Button onPress={onLike} disabled={isLiked} style={styles.likeBtn}>
-            <Heart
-              size={20}
-              color={isLiked ? '#ec4899' : '#fff'}
-              fill={isLiked ? '#ec4899' : 'none'}
-              style={{ marginRight: 8 }}
-            />
-            {isLiked ? 'Already Liked' : `Like ${first_name}`}
-          </Button>
         </View>
       </View>
     </Modal>

@@ -16,6 +16,7 @@ interface Props {
   // eslint-disable-next-line no-unused-vars
   onFiltersChange: (f: Filters) => void;
   onClose: () => void;
+  visible?: boolean;
 }
 
 const MAIN_INTERESTS = [
@@ -29,7 +30,7 @@ const ADDITIONAL_INTERESTS = [
   'podcasts', 'pets', 'wellness',
 ];
 
-export default function ProfileFilters({ filters, onFiltersChange, onClose }: Props) {
+export default function ProfileFilters({ filters, onFiltersChange, onClose, visible = true }: Props) {
   const [localFilters, setLocalFilters] = useState<Filters>(filters);
   const [showMore, setShowMore] = useState(false);
 
@@ -55,7 +56,7 @@ export default function ProfileFilters({ filters, onFiltersChange, onClose }: Pr
   };
 
   return (
-    <Modal visible onRequestClose={onClose} animationType="slide" transparent>
+    <Modal visible={visible} onRequestClose={onClose} animationType="slide" transparent>
       <View style={styles.overlay}>
         <View style={styles.container}>
           <ScrollView>

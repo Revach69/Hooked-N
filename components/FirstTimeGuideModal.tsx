@@ -15,6 +15,7 @@ import { X } from 'lucide-react-native';
 
 interface Props {
   onClose: () => void;
+  visible?: boolean;
 }
 
 const GUIDE_IMAGE_URL = '../first_time_guide.png'; // Replace with actual image URL or import
@@ -40,7 +41,7 @@ const slides = [
   },
 ];
 
-export default function FirstTimeGuideModal({ onClose }: Props) {
+export default function FirstTimeGuideModal({ onClose, visible = true }: Props) {
   const [page, setPage] = useState(0);
   const { width } = Dimensions.get('window');
   const onMomentumScrollEnd = (e: NativeSyntheticEvent<NativeScrollEvent>) => {
@@ -49,7 +50,7 @@ export default function FirstTimeGuideModal({ onClose }: Props) {
   };
 
   return (
-    <Modal visible onRequestClose={onClose} animationType="fade" transparent>
+    <Modal visible={visible} onRequestClose={onClose} animationType="fade" transparent>
       <View style={styles.overlay}>
         <View style={styles.container}>
           <TouchableOpacity onPress={onClose} style={styles.closeBtn} accessibilityLabel="Close guide" accessibilityRole="button">

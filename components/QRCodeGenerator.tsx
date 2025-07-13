@@ -14,7 +14,7 @@ export interface QRCodeGeneratorProps {
 
 export default function QRCodeGenerator({ url, fileName }: QRCodeGeneratorProps) {
   const [error, setError] = useState(false);
-  const qrRef = useRef<QRCode | null>(null);
+  const qrRef = useRef<any>(null);
 
   const handleDownload = () => {
     if (error) {
@@ -22,7 +22,7 @@ export default function QRCodeGenerator({ url, fileName }: QRCodeGeneratorProps)
       return;
     }
 
-    qrRef.current?.toDataURL(async (data) => {
+    qrRef.current?.toDataURL(async (data: string) => {
       try {
         const path = FileSystem.documentDirectory + fileName;
         await FileSystem.writeAsStringAsync(path, data, { encoding: FileSystem.EncodingType.Base64 });
