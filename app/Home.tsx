@@ -5,7 +5,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { LinearGradient } from 'expo-linear-gradient';
 import { QrCode, Hash, Heart, Shield, Clock, Users } from 'lucide-react-native';
 
-import { createPageUrl } from '../utils';
+import { createPageUrl, createPageUrlWithSlash } from '../utils';
 import { Button } from '../components/ui/button';
 import { Card, CardContent, CardHeader } from '../components/ui/card';
 import { Event } from '../api/entities';

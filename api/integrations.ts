@@ -5,7 +5,15 @@ import {
   getDownloadURL
 } from 'firebase/storage';
 import * as ImagePicker from 'expo-image-picker';
-import uuid from 'react-native-uuid';
+
+// Simple UUID generation function
+const generateUUID = (): string => {
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
+    const r = Math.random() * 16 | 0;
+    const v = c === 'x' ? r : (r & 0x3) | 0x8;
+    return v.toString(16);
+  });
+};
 
 // Firebase file upload function
 export const UploadFile = async (fileUri: string): Promise<{ url: string }> => {
@@ -14,7 +22,7 @@ export const UploadFile = async (fileUri: string): Promise<{ url: string }> => {
   const response = await fetch(fileUri);
   const blob = await response.blob();
 
-  const fileId = uuid.v4() as string;
+  const fileId = generateUUID();
   const fileName = fileUri.split('/').pop() || 'file';
   const fileRef = ref(storage, `uploads/${fileName}-${fileId}`);
 
