@@ -12,15 +12,15 @@
       "android"
     ],
     "orientation": "portrait",
-    "jsEngine": "Hermes",
+    "jsEngine": "hermes",
     "ios": {
       "bundleIdentifier": "com.anonymous.hooked" 
     },
-      "android": {
-        "permissions": [
-          "android.permission.CAMERA"
-        ],
-        "package": "com.anonymous.hooked"
+    "android": {
+      "permissions": [
+        "android.permission.CAMERA"
+      ],
+      "package": "com.anonymous.hooked"
+    }
   }
-}
 }

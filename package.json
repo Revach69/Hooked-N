@@ -13,7 +13,8 @@
       "reactNativeDirectoryCheck": {
         "exclude": [
           "@base44/sdk",
-          "tailwindcss-animate"
+          "tailwindcss-animate",
+          "firebase"
         ]
       }
     }
@@ -56,6 +57,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.19.0",
+    "@react-native-community/cli": "^13.6.8",
     "@types/firebase": "^2.4.32",
     "@types/react": "~19.0.10",
     "@typescript-eslint/eslint-plugin": "^8.35.1",
