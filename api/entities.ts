@@ -13,6 +13,38 @@ import {
   DocumentData,
   QueryConstraint
 } from 'firebase/firestore';
+import { 
+  Event as EventType, 
+  UserProfile, 
+  Match, 
+  Message as MessageType, 
+  Like as LikeType, 
+  EventFeedback as EventFeedbackType, 
+  ContactShare as ContactShareType,
+  DbEvent,
+  DbUserProfile,
+  DbMatch,
+  DbMessage,
+  DbLike,
+  DbEventFeedback,
+  DbContactShare
+} from '../types';
+import { 
+  mapDbToEvent,
+  mapDbToUserProfile,
+  mapDbToMatch,
+  mapDbToMessage,
+  mapDbToLike,
+  mapDbToEventFeedback,
+  mapDbToContactShare,
+  mapEventToDb,
+  mapUserProfileToDb,
+  mapMatchToDb,
+  mapMessageToDb,
+  mapLikeToDb,
+  mapEventFeedbackToDb,
+  mapContactShareToDb
+} from '../utils/mappers';
 
 // --- Generic Collection Methods ---
 function getCollection(name: string) {

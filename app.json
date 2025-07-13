@@ -16,11 +16,11 @@
     "ios": {
       "bundleIdentifier": "com.anonymous.hooked" 
     },
-      "android": {
-        "permissions": [
-          "android.permission.CAMERA"
-        ],
-        "package": "com.anonymous.hooked"
+    "android": {
+      "permissions": [
+        "android.permission.CAMERA"
+      ],
+      "package": "com.anonymous.hooked"
+    }
   }
-}
 }

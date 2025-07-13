@@ -27,14 +27,23 @@ import { isFileInfoSuccess } from '../lib/helpers';
 import { User, EventProfile, Event } from '../api/entities';
 import { UploadFile } from '../api/integrations';
 import { saveLocalProfile, getLocalProfile } from '../lib/localProfile';
+<<<<<<< HEAD
 import { generateUUID } from '../utils';
+=======
+import { Event as EventType, FormData, FormErrors, Step, DropdownOption } from '../types';
+import { logger } from '../utils/logger';
 
-type Step = 'manual' | 'processing' | 'error';
+// Simple UUID v4 generator function
+const generateUUID = (): string => {
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+    const r = Math.random() * 16 | 0;
+    const v = c === 'x' ? r : (r & 0x3) | 0x8;
+    return v.toString(16);
+  });
+};
+>>>>>>> 953708c96ef6745e7ca79ba67007fb824bfdca4b
 
-interface DropdownOption {
-  label: string;
-  value: string;
-}
+
 
 interface DropdownProps {
   options: DropdownOption[];
@@ -90,15 +99,15 @@ export default function Consent() {
   if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
     UIManager.setLayoutAnimationEnabledExperimental(true);
   }
-  const [event, setEvent] = useState<any>(null);
+  const [event, setEvent] = useState<EventType | null>(null);
   const [step, setStep] = useState<Step>('manual');
-  const [formData, setFormData] = useState({
-    first_name: '',
+  const [formData, setFormData] = useState<FormData>({
+    firstName: '',
     email: '',
     age: '',
-    gender_identity: '',
-    interested_in: '',
-    profile_photo_url: ''
+    genderIdentity: '',
+    interestedIn: '',
+    profilePhotoUrl: ''
   });
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -109,13 +118,13 @@ export default function Consent() {
     if (saved) {
       setFormData(prev => ({
         ...prev,
-        first_name: saved.fullName || prev.first_name,
+        firstName: saved.fullName || prev.firstName,
         age: saved.age != null ? String(saved.age) : prev.age,
-        gender_identity: saved.gender || prev.gender_identity,
-        interested_in: Array.isArray(saved.interests)
+        genderIdentity: saved.gender || prev.genderIdentity,
+        interestedIn: Array.isArray(saved.interests)
           ? saved.interests.join(', ')
-          : prev.interested_in,
-        profile_photo_url: (saved as any).profile_photo_url || prev.profile_photo_url,
+          : prev.interestedIn,
+        profilePhotoUrl: (saved as any).profile_photo_url || prev.profilePhotoUrl,
       }));
     }
   }, []);
@@ -133,12 +142,12 @@ export default function Consent() {
     try {
       const events = await Event.filter({ id: eventId });
       if (events.length > 0) {
-        setEvent(events[0]);
+        setEvent(events[0] as EventType);
       } else {
         (navigation as any).navigate('Home');
       }
     } catch (err) {
-      console.error('Error fetching event details:', err);
+      logger.error('Error fetching event details:', err);
       (navigation as any).navigate('Home');
     }
   }, [navigation]);
@@ -170,7 +179,7 @@ export default function Consent() {
       return;
 }
     } catch (e) {
-      console.warn('Could not get file info', e);
+      logger.warn('Could not get file info', e);
     }
 
     setIsUploadingPhoto(true);
@@ -185,7 +194,7 @@ export default function Consent() {
       setFormData(prev => ({ ...prev, profile_photo_url: url }));
       toast({ type: 'success', text1: 'Photo uploaded' });
     } catch (err) {
-      console.error('Error uploading photo:', err);
+      logger.error('Error uploading photo:', err);
       setError('Failed to upload photo. Please try again.');
       Alert.alert('Error', 'Failed to upload photo. Please try again.');
     } finally {
@@ -195,12 +204,12 @@ export default function Consent() {
 
   const handleSubmit = async () => {
     // Validate all required fields including photo
-    if (!formData.first_name || !formData.email || !formData.age || !formData.gender_identity || !formData.interested_in) {
+    if (!formData.firstName || !formData.email || !formData.age || !formData.genderIdentity || !formData.interestedIn) {
       setError('Please fill in all fields.');
       return;
     }
 
-    if (!formData.profile_photo_url) {
+    if (!formData.profilePhotoUrl) {
       setError('Please upload a profile photo.');
       return;
     }
@@ -213,48 +222,52 @@ export default function Consent() {
       const profileColor = '#' + Math.floor(Math.random() * 16777215).toString(16).padStart(6, '0');
 
       await User.updateMyUserData({
-        profile_photo_url: formData.profile_photo_url,
+        profile_photo_url: formData.profilePhotoUrl,
         age: parseInt(formData.age, 10),
-        gender_identity: formData.gender_identity,
-        interested_in: formData.interested_in,
+        gender_identity: formData.genderIdentity,
+        interested_in: formData.interestedIn,
         profile_color: profileColor
       });
 
+      if (!event) {
+        throw new Error('Event not found');
+      }
+      
       await EventProfile.create({
         event_id: event.id,
         session_id: sessionId,
-        first_name: formData.first_name,
+        first_name: formData.firstName,
         email: formData.email,
         age: parseInt(formData.age, 10),
-        gender_identity: formData.gender_identity,
-        interested_in: formData.interested_in,
+        gender_identity: formData.genderIdentity,
+        interested_in: formData.interestedIn,
         profile_color: profileColor,
-        profile_photo_url: formData.profile_photo_url,
+        profile_photo_url: formData.profilePhotoUrl,
         is_visible: true
       });
 
       await AsyncStorage.setItem('currentSessionId', sessionId);
       await AsyncStorage.setItem('currentProfileColor', profileColor);
-      await AsyncStorage.setItem('currentProfilePhotoUrl', formData.profile_photo_url);
+      await AsyncStorage.setItem('currentProfilePhotoUrl', formData.profilePhotoUrl);
 
       await saveLocalProfile({
-        fullName: formData.first_name.trim(),
+        fullName: formData.firstName.trim(),
         phoneNumber: '',
         age: parseInt(formData.age.trim(), 10),
-        gender: formData.gender_identity.trim(),
+        gender: formData.genderIdentity.trim(),
         instagram: '',
-        interests: formData.interested_in
+        interests: formData.interestedIn
           .split(',')
           .map(i => i.trim())
           .filter(Boolean),
-        profile_photo_url: formData.profile_photo_url,
+        profile_photo_url: formData.profilePhotoUrl,
       });
 
       toast({ type: 'success', text1: 'Profile created!' });
       Alert.alert('Success', 'Profile created! Welcome to the event.');
       (navigation as any).navigate('Discovery');
     } catch (err) {
-      console.error('Error creating profile:', err);
+      logger.error('Error creating profile:', err);
       setError('Failed to create profile. Please try again.');
       toast({ type: 'error', text1: 'Failed to create profile' });
       Alert.alert('Error', 'Failed to create profile. Please try again.');
@@ -269,8 +282,8 @@ export default function Consent() {
       {event && <Text style={styles.subtitle}>This profile is temporary and only for {event.name}.</Text>}
 
       <TouchableOpacity style={styles.photoWrapper} onPress={handlePhotoUpload} disabled={isUploadingPhoto}>
-        {formData.profile_photo_url ? (
-          <Image source={{ uri: formData.profile_photo_url }} style={styles.photo} />
+        {formData.profilePhotoUrl ? (
+          <Image source={{ uri: formData.profilePhotoUrl }} style={styles.photo} />
         ) : (
           <View style={styles.placeholderPhoto}>
             <Text style={styles.placeholderText}>Upload Photo</Text>
@@ -282,8 +295,8 @@ export default function Consent() {
       <TextInput
         placeholder="First Name"
         placeholderTextColor={colorScheme === 'dark' ? '#999' : '#666'}
-        value={formData.first_name}
-        onChangeText={text => setFormData({ ...formData, first_name: text })}
+        value={formData.firstName}
+        onChangeText={text => setFormData({ ...formData, firstName: text })}
         style={[styles.input, colorScheme === 'dark' && styles.inputDark]}
       />
       <TextInput
@@ -307,8 +320,8 @@ export default function Consent() {
           { label: 'Man', value: 'man' },
           { label: 'Woman', value: 'woman' },
         ]}
-        value={formData.gender_identity}
-        onChange={val => setFormData({ ...formData, gender_identity: val })}
+        value={formData.genderIdentity}
+        onChange={val => setFormData({ ...formData, genderIdentity: val })}
         placeholder="I am a..."
         dark={colorScheme === 'dark'}
       />
@@ -318,8 +331,8 @@ export default function Consent() {
           { label: 'Women', value: 'women' },
           { label: 'Everyone', value: 'everyone' },
         ]}
-        value={formData.interested_in}
-        onChange={val => setFormData({ ...formData, interested_in: val })}
+        value={formData.interestedIn}
+        onChange={val => setFormData({ ...formData, interestedIn: val })}
         placeholder="I'm interested in..."
         dark={colorScheme === 'dark'}
       />
