@@ -2,6 +2,6 @@
 
 
 The following build commands failed:
-	ScanDependencies /Users/roirevach/Library/Developer/Xcode/DerivedData/Hooked-dsnonfwrbyhquleyjoccjarpxpfd/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/RNFBApp.build/Objects-normal/x86_64/RNFBAppModule.o /Users/roirevach/Desktop/Hooked\ N/node_modules/@react-native-firebase/app/ios/RNFBApp/RNFBAppModule.m normal x86_64 objective-c com.apple.compilers.llvm.clang.1_0.compiler (in target 'RNFBApp' from project 'Pods')
+	PhaseScriptExecution [CP-User]\ Generate\ Specs /Users/roirevach/Library/Developer/Xcode/DerivedData/Hooked-dsnonfwrbyhquleyjoccjarpxpfd/Build/Intermediates.noindex/Pods.build/Debug-iphonesimulator/ReactCodegen.build/Script-46EB2E0006AA50.sh (in target 'ReactCodegen' from project 'Pods')
 	Building workspace Hooked with scheme Hooked and configuration Debug
 (2 failures)
