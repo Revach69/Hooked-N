@@ -61,42 +61,5 @@ target 'Hooked' do
         end
       end
     end
-
-    # Fix module conflicts and build settings
-    installer.pods_project.targets.each do |target|
-      target.build_configurations.each do |config|
-        # Allow non-modular includes for React targets
-        if target.name.include?('React')
-          config.build_settings['CLANG_ALLOW_NON_MODULAR_INCLUDES_IN_FRAMEWORK_MODULES'] = 'YES'
-        end
-        
-        # Add module conflict suppression
-        config.build_settings['OTHER_CFLAGS'] ||= ['$(inherited)']
-        config.build_settings['OTHER_CFLAGS'] << '-Wno-module-conflict'
-        
-        # Disable module maps for React targets to avoid conflicts
-        if target.name.include?('React')
-          config.build_settings['DEFINES_MODULE'] = 'NO'
-          config.build_settings['CLANG_MODULES_AUTOLINK'] = 'NO'
-        end
-      end
-    end
-
-    # Create simple module maps to satisfy references
-    react_runtime_dir = "Pods/Headers/Public/react_runtime"
-    react_common_dir = "Pods/Headers/Public/ReactCommon"
-    
-    # Ensure directories exist
-    FileUtils.mkdir_p(react_runtime_dir) unless Dir.exist?(react_runtime_dir)
-    FileUtils.mkdir_p(react_common_dir) unless Dir.exist?(react_common_dir)
-    
-    # Create simple module maps
-    react_jsitooling_modulemap_path = "#{react_runtime_dir}/React-jsitooling.modulemap"
-    File.write(react_jsitooling_modulemap_path, "module React-jsitooling {\n  header \"React-jsitooling.h\"\n  export *\n}")
-    puts "[Info] Created React-jsitooling.modulemap"
-
-    react_common_modulemap_path = "#{react_common_dir}/ReactCommon.modulemap"
-    File.write(react_common_modulemap_path, "module ReactCommon {\n  header \"ReactCommon.h\"\n  export *\n}")
-    puts "[Info] Created ReactCommon.modulemap"
   end
 end
