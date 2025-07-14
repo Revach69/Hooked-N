@@ -1,4 +1,3 @@
-import auth from '@react-native-firebase/auth';
 import firestore from '@react-native-firebase/firestore';
 import storage from '@react-native-firebase/storage';
 import { errorHandler } from '../utils/errorHandler';
@@ -7,7 +6,7 @@ import { errorHandler } from '../utils/errorHandler';
 // It automatically uses the GoogleService-Info.plist configuration
 
 // ✅ Export the Firebase services
-export { auth, firestore, storage };
+export { firestore, storage };
 
 // ✅ For compatibility with existing code, export as db
 export const db = firestore();
